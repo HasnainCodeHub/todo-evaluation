@@ -1,0 +1,363 @@
+openapi: 3.1.0
+info:
+  title: Evolution of Todo - Task API
+  description: |
+    Phase 2.2 Backend REST API for task management.
+
+    **Authentication**: This phase uses a temporary `X-User-ID` header for user
+    identification. Real authentication (JWT via Better Auth) will be introduced
+    in Phase 2.3.
+
+    **User Scoping**: All operations are scoped to the user specified in the
+    `X-User-ID` header. Users cannot access other users' tasks.
+  version: 2.2.0
+  contact:
+    name: Evolution of Todo Project
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+tags:
+  - name: Tasks
+    description: Task CRUD operations
+
+paths:
+  /api/tasks:
+    post:
+      summary: Create a new task
+      description: Creates a new task for the authenticated user.
+      operationId: createTask
+      tags: [Tasks]
+      parameters:
+        - $ref: '#/components/parameters/UserIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreate'
+            examples:
+              minimal:
+                summary: Minimal task
+                value:
+                  title: "Buy groceries"
+              full:
+                summary: Full task with description
+                value:
+                  title: "Buy groceries"
+                  description: "Milk, eggs, bread"
+      responses:
+        '201':
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          $ref: '#/components/responses/MissingUserId'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    get:
+      summary: List all tasks
+      description: Returns all tasks for the authenticated user.
+      operationId: listTasks
+      tags: [Tasks]
+      parameters:
+        - $ref: '#/components/parameters/UserIdHeader'
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskResponse'
+        '400':
+          $ref: '#/components/responses/MissingUserId'
+
+  /api/tasks/{task_id}:
+    get:
+      summary: Get a task by ID
+      description: Returns a single task if it exists and belongs to the user.
+      operationId: getTask
+      tags: [Tasks]
+      parameters:
+        - $ref: '#/components/parameters/UserIdHeader'
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: Task found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          $ref: '#/components/responses/MissingUserId'
+        '404':
+          $ref: '#/components/responses/TaskNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    put:
+      summary: Update a task
+      description: |
+        Updates a task's properties. Only provided fields are updated.
+        If the task doesn't exist or belongs to another user, returns 404.
+      operationId: updateTask
+      tags: [Tasks]
+      parameters:
+        - $ref: '#/components/parameters/UserIdHeader'
+        - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpdate'
+            examples:
+              updateTitle:
+                summary: Update title only
+                value:
+                  title: "Updated task title"
+              updateCompleted:
+                summary: Mark as completed
+                value:
+                  completed: true
+              fullUpdate:
+                summary: Update all fields
+                value:
+                  title: "New title"
+                  description: "New description"
+                  completed: true
+      responses:
+        '200':
+          description: Task updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          $ref: '#/components/responses/MissingUserId'
+        '404':
+          $ref: '#/components/responses/TaskNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      summary: Delete a task
+      description: |
+        Deletes a task. If the task doesn't exist or belongs to another user,
+        returns 404.
+      operationId: deleteTask
+      tags: [Tasks]
+      parameters:
+        - $ref: '#/components/parameters/UserIdHeader'
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '204':
+          description: Task deleted successfully
+        '400':
+          $ref: '#/components/responses/MissingUserId'
+        '404':
+          $ref: '#/components/responses/TaskNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/tasks/{task_id}/complete:
+    patch:
+      summary: Toggle task completion
+      description: |
+        Toggles the completion status of a task. If completed is true,
+        sets it to false, and vice versa.
+      operationId: toggleTaskComplete
+      tags: [Tasks]
+      parameters:
+        - $ref: '#/components/parameters/UserIdHeader'
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: Task completion status toggled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          $ref: '#/components/responses/MissingUserId'
+        '404':
+          $ref: '#/components/responses/TaskNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+components:
+  parameters:
+    UserIdHeader:
+      name: X-User-ID
+      in: header
+      required: true
+      description: |
+        User identifier for request scoping. This is a temporary mechanism
+        for Phase 2.2; will be replaced by JWT authentication in Phase 2.3.
+      schema:
+        type: string
+        minLength: 1
+      example: "user-123"
+
+    TaskId:
+      name: task_id
+      in: path
+      required: true
+      description: Unique task identifier
+      schema:
+        type: integer
+        minimum: 1
+      example: 42
+
+  schemas:
+    TaskCreate:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Task title
+          example: "Buy groceries"
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          description: Optional task description
+          example: "Milk, eggs, bread"
+
+    TaskUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          nullable: true
+          description: New task title (if updating)
+          example: "Updated task title"
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          description: New task description (if updating)
+          example: "Updated description"
+        completed:
+          type: boolean
+          nullable: true
+          description: New completion status (if updating)
+          example: true
+
+    TaskResponse:
+      type: object
+      required:
+        - id
+        - user_id
+        - title
+        - completed
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: integer
+          description: Unique task identifier
+          example: 42
+        user_id:
+          type: string
+          description: Owner identifier
+          example: "user-123"
+        title:
+          type: string
+          description: Task title
+          example: "Buy groceries"
+        description:
+          type: string
+          nullable: true
+          description: Task description
+          example: "Milk, eggs, bread"
+        completed:
+          type: boolean
+          description: Completion status
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp (UTC)
+          example: "2026-01-02T12:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp (UTC)
+          example: "2026-01-02T12:30:00Z"
+
+    Error:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Human-readable error message
+          example: "Task not found"
+
+    ValidationError:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: array
+          items:
+            type: object
+            properties:
+              loc:
+                type: array
+                items:
+                  oneOf:
+                    - type: string
+                    - type: integer
+              msg:
+                type: string
+              type:
+                type: string
+
+  responses:
+    MissingUserId:
+      description: X-User-ID header is missing or empty
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            detail: "X-User-ID header is required"
+
+    TaskNotFound:
+      description: Task not found or belongs to another user
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            detail: "Task not found"
+
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
+          example:
+            detail:
+              - loc: ["body", "title"]
+                msg: "Field required"
+                type: "missing"

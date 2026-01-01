@@ -264,4 +264,9 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
 
 ## Recent Changes
+- 004-backend-rest-api: Added Python 3.13+ + FastAPI, Pydantic (via SQLModel), uvicorn
 - 001-cli-task-crud: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+
+## Active Technologies
+- Python 3.13+ + FastAPI, Pydantic (via SQLModel), uvicorn (004-backend-rest-api)
+- Neon Serverless PostgreSQL (via Phase 2.1 database layer) (004-backend-rest-api)
