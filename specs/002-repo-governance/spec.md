@@ -24,6 +24,7 @@ Phase 2.0 prepares the project for full-stack development by evolving the reposi
 - Authentication implementation
 - Frontend UI implementation
 - Any application logic or features
+- **HARD FAILURE**: ANY authentication logic in Phase 2.2 (JWT parsing, Better Auth usage, auth middleware, or Authorization header handling).
 
 ## User Scenarios & Testing *(mandatory)*
 
