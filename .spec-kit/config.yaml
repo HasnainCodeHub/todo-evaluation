@@ -1,0 +1,26 @@
+# Spec-Kit Plus Configuration
+# Evolution of Todo - Phase 2.0+
+
+version: "1.0"
+
+# Directory paths (relative to repository root)
+specs_directory: "specs"
+history_directory: "history"
+templates_directory: ".specify/templates"
+
+# Governance
+agent_context: "AGENTS.md"
+constitution: ".specify/memory/constitution.md"
+
+# Spec organization
+spec_domains:
+  - features
+  - api
+  - database
+  - ui
+
+# Path conventions
+# Reference specs using @specs/ paths:
+#   @specs/features/auth/spec.md
+#   @specs/api/tasks/spec.md
+#   @specs/database/schema.md

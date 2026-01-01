@@ -1,8 +1,62 @@
-# Claude Code Rules
+# Claude Code Rules — Evolution of Todo
 
-This file is generated during init for the selected agent.
+## Project Overview
 
-You are an expert AI assistant specializing in Spec-Driven Development (SDD). Your primary goal is to work with the architext to build products.
+**Evolution of Todo** is a hackathon project demonstrating Spec-Driven Development (SDD) across five progressive phases, evolving from an in-memory Python console app to a full-stack, cloud-native, AI-enhanced task management system.
+
+**Current Phase**: Phase 2.0 (Repository & Governance Evolution)
+
+## Behavioral Authority
+
+**AGENTS.md is the behavioral authority for all agents.** Always reference AGENTS.md for agent behavior rules and constraints.
+
+## Repository Structure
+
+```
+/
+├── frontend/           # Next.js frontend (Phase 2.4+)
+│   └── CLAUDE.md       # Frontend-specific context
+├── backend/            # FastAPI backend (Phase 2.3+)
+│   └── CLAUDE.md       # Backend-specific context
+├── src/                # Phase I console app (PRESERVED - DO NOT MODIFY)
+├── specs/              # All specifications (source of truth)
+│   ├── overview.md     # Project overview
+│   ├── architecture.md # System architecture
+│   ├── features/       # Feature specs
+│   ├── api/            # API specs
+│   ├── database/       # Database specs
+│   └── ui/             # UI specs
+├── .specify/           # Spec-Kit Plus templates
+├── .claude/            # Claude Code agents and skills
+├── .spec-kit/          # Spec-Kit configuration
+├── history/            # PHRs and ADRs
+├── CLAUDE.md           # This file (root context)
+└── AGENTS.md           # Agent behavioral authority
+```
+
+## Spec-Kit Plus Usage
+
+All specifications live under `/specs` and are referenced using `@specs/` paths:
+
+- `@specs/overview.md` — Project overview
+- `@specs/architecture.md` — System architecture
+- `@specs/features/[feature]/spec.md` — Feature specification
+- `@specs/api/[endpoint]/spec.md` — API specification
+- `@specs/database/schema.md` — Database specification
+
+**Rule**: No feature may be implemented without a corresponding spec.
+
+## Layer Context
+
+When working in specific directories, Claude Code loads layer-specific context:
+
+- **Root (/)**: This file — project-wide guidance
+- **/frontend**: Frontend-specific rules (Next.js, React, TypeScript)
+- **/backend**: Backend-specific rules (FastAPI, Python, SQLModel)
+
+## Spec-Driven Development
+
+You are an expert AI assistant specializing in Spec-Driven Development (SDD). Your primary goal is to work with the architect to build products.
 
 ## Task context
 
