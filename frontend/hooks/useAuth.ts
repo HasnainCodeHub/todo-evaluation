@@ -32,47 +32,54 @@ export function useAuth() {
   })
 
   // Restore session from storage on mount
-  // CRITICAL: Verify session with Better Auth, don't just trust localStorage
+  // Trust localStorage for immediate display, verify session in background
   useEffect(() => {
     const restoreSession = async () => {
       try {
-        // First check localStorage for existing session
+        // Check localStorage for existing session
         const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY)
         const storedUser = localStorage.getItem(USER_STORAGE_KEY)
 
         if (storedToken && storedUser) {
-          // Verify session is still valid by requesting a fresh JWT
-          // This checks the Better Auth session cookie
-          const jwtResponse = await fetch('/api/auth/jwt')
+          // Immediately trust localStorage for fast UX
+          const user = JSON.parse(storedUser)
+          setAuthState({
+            isAuthenticated: true,
+            user,
+            token: storedToken,
+            isLoading: false,
+            error: null,
+          })
 
-          if (jwtResponse.ok) {
-            // Session is valid - use fresh token
-            const jwtData = await jwtResponse.json()
-            const user = JSON.parse(storedUser)
-
-            // Update token if a fresh one was provided
-            if (jwtData.token) {
-              localStorage.setItem(TOKEN_STORAGE_KEY, jwtData.token)
-            }
-
-            setAuthState({
-              isAuthenticated: true,
-              user: jwtData.user || user,
-              token: jwtData.token || storedToken,
-              isLoading: false,
-              error: null,
+          // Verify session in background (non-blocking)
+          // If verification fails, user will be signed out on next API call
+          try {
+            const jwtResponse = await fetch('/api/auth/jwt', {
+              credentials: 'include',
             })
-          } else {
-            // Session expired or invalid - clear localStorage
-            localStorage.removeItem(TOKEN_STORAGE_KEY)
-            localStorage.removeItem(USER_STORAGE_KEY)
-            setAuthState(prev => ({ ...prev, isLoading: false }))
+            if (jwtResponse.ok) {
+              const jwtData = await jwtResponse.json()
+              if (jwtData.token) {
+                // Update with fresh token
+                localStorage.setItem(TOKEN_STORAGE_KEY, jwtData.token)
+                setAuthState(prev => ({
+                  ...prev,
+                  token: jwtData.token,
+                  user: jwtData.user || prev.user,
+                }))
+              }
+            }
+            // Don't sign out on verification failure - let API calls handle it
+          } catch {
+            // Background verification failed - ignore, let API calls handle auth
+            console.warn('Background session verification failed')
           }
         } else {
-          // No stored session - check if Better Auth has a valid session
-          // (user might have session cookie but no localStorage)
+          // No stored session - check if Better Auth has a valid session cookie
           try {
-            const jwtResponse = await fetch('/api/auth/jwt')
+            const jwtResponse = await fetch('/api/auth/jwt', {
+              credentials: 'include',
+            })
             if (jwtResponse.ok) {
               const jwtData = await jwtResponse.json()
               if (jwtData.token && jwtData.user) {
@@ -145,7 +152,9 @@ export function useAuth() {
       }
 
       // Generate JWT token for backend API calls via API endpoint
-      const jwtResponse = await fetch('/api/auth/jwt')
+      const jwtResponse = await fetch('/api/auth/jwt', {
+        credentials: 'include',
+      })
       if (!jwtResponse.ok) {
         throw new Error('Failed to generate JWT token')
       }
@@ -206,7 +215,9 @@ export function useAuth() {
     // Regenerate token if user is authenticated
     if (authState.user) {
       try {
-        const jwtResponse = await fetch('/api/auth/jwt')
+        const jwtResponse = await fetch('/api/auth/jwt', {
+          credentials: 'include',
+        })
         if (!jwtResponse.ok) {
           throw new Error('Failed to refresh JWT token')
         }
