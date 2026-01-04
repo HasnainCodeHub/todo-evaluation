@@ -28,7 +28,10 @@ export const auth = betterAuth({
     requireEmailVerification: false,
   },
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
-  trustedOrigins: ['http://localhost:3000'],
+  trustedOrigins: [
+    'http://localhost:3000',
+    'https://todo-evolution-liart.vercel.app',
+  ],
 })
 
 // Note: JWT tokens for API authentication are generated via /api/auth/jwt endpoint
