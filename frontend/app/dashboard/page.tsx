@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthContext } from '../../components/auth/AuthProvider'
@@ -65,6 +65,7 @@ export default function DashboardPage() {
   const [mounted, setMounted] = useState(false)
   const [filter, setFilter] = useState<FilterType>('all')
   const [showWelcome, setShowWelcome] = useState(true)
+  const hasRedirected = useRef(false)
 
   useEffect(() => {
     setMounted(true)
@@ -74,8 +75,10 @@ export default function DashboardPage() {
   }, [])
 
   // Redirect to signin if not authenticated (only after auth state resolves)
+  // Use ref to prevent multiple redirect attempts
   useEffect(() => {
-    if (!auth.authState.isLoading && !auth.authState.isAuthenticated) {
+    if (!auth.authState.isLoading && !auth.authState.isAuthenticated && !hasRedirected.current) {
+      hasRedirected.current = true
       router.push('/signin')
     }
   }, [auth.authState.isLoading, auth.authState.isAuthenticated, router])

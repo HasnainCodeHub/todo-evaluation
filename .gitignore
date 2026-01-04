@@ -54,3 +54,12 @@ htmlcov/
 # Temporary files
 *.tmp
 *.log
+cookies.txt
+test-*.json
+
+# Node.js
+node_modules/
+.next/
+
+# Windows specific
+NUL

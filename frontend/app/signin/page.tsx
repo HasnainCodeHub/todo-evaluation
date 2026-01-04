@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthContext } from '../../components/auth/AuthProvider'
@@ -16,9 +16,20 @@ function SignInForm() {
   const [name, setName] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false)
+  const hasRedirected = useRef(false)
 
   const auth = useAuthContext()
   const { authState } = auth
+
+  // Handle redirect for authenticated users - use useEffect to avoid render-loop
+  useEffect(() => {
+    if (!authState.isLoading && authState.isAuthenticated && !hasRedirected.current) {
+      hasRedirected.current = true
+      setIsRedirecting(true)
+      router.push('/dashboard')
+    }
+  }, [authState.isLoading, authState.isAuthenticated, router])
 
   // Show loading while auth state is resolving
   if (authState.isLoading) {
@@ -32,9 +43,8 @@ function SignInForm() {
     )
   }
 
-  // Redirect if already authenticated
-  if (authState.isAuthenticated) {
-    router.push('/dashboard')
+  // Show redirecting state (controlled by useEffect, not render-time logic)
+  if (isRedirecting || authState.isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-50">
         <div className="text-center">
@@ -52,6 +62,9 @@ function SignInForm() {
 
     try {
       await auth.signIn(email, password, isSignUp)
+      // Set redirecting state and let useEffect handle the redirect
+      hasRedirected.current = true
+      setIsRedirecting(true)
       router.push('/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication failed')
