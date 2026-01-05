@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthContext } from '../../components/auth/AuthProvider'
@@ -20,6 +20,13 @@ function SignInForm() {
   const auth = useAuthContext()
   const { authState } = auth
 
+  // Redirect if already authenticated - moved to useEffect to avoid setState during render
+  useEffect(() => {
+    if (authState.isAuthenticated && !authState.isLoading) {
+      router.push('/dashboard')
+    }
+  }, [authState.isAuthenticated, authState.isLoading, router])
+
   // Show loading while auth state is resolving
   if (authState.isLoading) {
     return (
@@ -32,9 +39,8 @@ function SignInForm() {
     )
   }
 
-  // Redirect if already authenticated
+  // Show redirecting state while authenticated
   if (authState.isAuthenticated) {
-    router.push('/dashboard')
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-50">
         <div className="text-center">
