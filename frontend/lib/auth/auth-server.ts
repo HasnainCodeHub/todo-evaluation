@@ -29,10 +29,6 @@ export const auth = betterAuth({
   },
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
   trustedOrigins: ['http://localhost:3000'],
-  // Advanced options for debugging
-  advanced: {
-    generateId: () => crypto.randomUUID(),
-  },
 })
 
 // Note: JWT tokens for API authentication are generated via /api/auth/jwt endpoint
