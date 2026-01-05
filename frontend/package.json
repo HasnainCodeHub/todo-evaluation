@@ -16,10 +16,10 @@
     "jsonwebtoken": "^9.0.3",
     "kysely": "^0.28.9",
     "kysely-pg-client": "^0.1.14",
-    "next": "^14.2.35",
+    "next": "^15.1.4",
     "pg": "^8.16.3",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -27,10 +27,10 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
-    "eslint": "^8",
-    "eslint-config-next": "^14.2.0",
+    "eslint": "^9.17.0",
+    "eslint-config-next": "^15.1.4",
     "postcss": "^8",
-    "tailwindcss": "^3.3.0",
-    "typescript": "^5.3.3"
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.7.2"
   }
 }
