@@ -22,6 +22,7 @@ function SignInForm() {
   const auth = useAuthContext()
   const { authState } = auth
 
+
   // Handle redirect for authenticated users - use useEffect to avoid render-loop
   useEffect(() => {
     if (!authState.isLoading && authState.isAuthenticated && !hasRedirected.current) {
