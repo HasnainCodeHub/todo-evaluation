@@ -35,10 +35,19 @@ export function useAuth() {
   // Trust localStorage for immediate display, verify session in background
   useEffect(() => {
     const restoreSession = async () => {
+      const isDev = process.env.NODE_ENV === 'development'
+
       try {
         // Check localStorage for existing session
         const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY)
         const storedUser = localStorage.getItem(USER_STORAGE_KEY)
+
+        if (isDev) {
+          console.log('[Auth] Restoring session...')
+          console.log('[Auth] Stored token exists:', !!storedToken)
+          console.log('[Auth] Stored user exists:', !!storedUser)
+          console.log('[Auth] Cookies:', document.cookie)
+        }
 
         if (storedToken && storedUser) {
           // Immediately trust localStorage for fast UX
@@ -57,6 +66,11 @@ export function useAuth() {
             const jwtResponse = await fetch('/api/auth/jwt', {
               credentials: 'include',
             })
+
+            if (isDev) {
+              console.log('[Auth] JWT verification response:', jwtResponse.status)
+            }
+
             if (jwtResponse.ok) {
               const jwtData = await jwtResponse.json()
               if (jwtData.token) {
@@ -70,9 +84,11 @@ export function useAuth() {
               }
             }
             // Don't sign out on verification failure - let API calls handle it
-          } catch {
+          } catch (err) {
             // Background verification failed - ignore, let API calls handle auth
-            console.warn('Background session verification failed')
+            if (isDev) {
+              console.warn('Background session verification failed:', err)
+            }
           }
         } else {
           // No stored session - check if Better Auth has a valid session cookie
@@ -80,10 +96,18 @@ export function useAuth() {
             const jwtResponse = await fetch('/api/auth/jwt', {
               credentials: 'include',
             })
+
+            if (isDev) {
+              console.log('[Auth] Checking for Better Auth cookie session:', jwtResponse.status)
+            }
+
             if (jwtResponse.ok) {
               const jwtData = await jwtResponse.json()
               if (jwtData.token && jwtData.user) {
                 // Valid session exists - restore it
+                if (isDev) {
+                  console.log('[Auth] Restored session from Better Auth cookie')
+                }
                 localStorage.setItem(TOKEN_STORAGE_KEY, jwtData.token)
                 localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(jwtData.user))
 
@@ -97,13 +121,17 @@ export function useAuth() {
                 return
               }
             }
-          } catch {
+          } catch (err) {
             // No valid session - continue as unauthenticated
+            if (isDev) {
+              console.log('[Auth] No Better Auth session found:', err)
+            }
           }
           setAuthState(prev => ({ ...prev, isLoading: false }))
         }
-      } catch {
+      } catch (err) {
         // Clear invalid stored data
+        console.error('[Auth] Session restore error:', err)
         localStorage.removeItem(TOKEN_STORAGE_KEY)
         localStorage.removeItem(USER_STORAGE_KEY)
         setAuthState(prev => ({ ...prev, isLoading: false }))

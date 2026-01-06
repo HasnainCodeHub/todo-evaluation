@@ -13,9 +13,10 @@ if (!process.env.BETTER_AUTH_SECRET) {
   throw new Error('BETTER_AUTH_SECRET is required')
 }
 
-// Determine base URL for Better Auth
-// Priority: explicit env var > Vercel URL > localhost
-function getServerBaseURL(): string {
+// Determine the base URL for Better Auth
+// In production, use BETTER_AUTH_URL or VERCEL_URL
+// In development, use localhost
+const getBaseURL = () => {
   if (process.env.BETTER_AUTH_URL) {
     return process.env.BETTER_AUTH_URL
   }
@@ -25,7 +26,22 @@ function getServerBaseURL(): string {
   return 'http://localhost:3000'
 }
 
-const baseURL = getServerBaseURL()
+// Determine trusted origins
+// In production, trust the deployment URL
+// In development, trust localhost
+const getTrustedOrigins = () => {
+  const origins = [
+    'http://localhost:3000',
+    'https://todo-evolution-liart.vercel.app'
+  ]
+
+  const baseURL = getBaseURL()
+  if (baseURL !== 'http://localhost:3000' && !origins.includes(baseURL)) {
+    origins.push(baseURL)
+  }
+
+  return origins
+}
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
@@ -41,13 +57,14 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: false,
   },
-  baseURL,
-  trustedOrigins: [
-    'http://localhost:3000',
-    'https://todo-evolution-liart.vercel.app',
-    // Include the current base URL if it's not already listed
-    ...(baseURL !== 'http://localhost:3000' && !baseURL.includes('todo-evolution-liart.vercel.app') ? [baseURL] : []),
-  ],
+  baseURL: getBaseURL(),
+  trustedOrigins: getTrustedOrigins(),
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60, // Cache for 5 minutes
+    },
+  },
 })
 
 // Note: JWT tokens for API authentication are generated via /api/auth/jwt endpoint
