@@ -30,7 +30,7 @@ const getBaseURL = () => {
 // In production, trust the deployment URL
 // In development, trust localhost
 const getTrustedOrigins = () => {
-  const origins = ['http://localhost:3000']
+  const origins = ['http://localhost:3000','https://todo-evaluation.vercel.app/']
 
   if (process.env.BETTER_AUTH_URL) {
     origins.push(process.env.BETTER_AUTH_URL)
