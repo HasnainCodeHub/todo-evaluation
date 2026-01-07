@@ -3,6 +3,10 @@
 
 // API URL getter - ensures the value is read when needed, not at module load
 export function getApiUrl(): string {
+  // Enforce production URL for production builds
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://evaluation-todo.vercel.app/';
+  }
   return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 }
 
