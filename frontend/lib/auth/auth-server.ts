@@ -30,17 +30,25 @@ const getBaseURL = () => {
 // In production, trust the deployment URL
 // In development, trust localhost
 const getTrustedOrigins = () => {
-  const origins = ['http://localhost:3000','https://todo-evaluation.vercel.app/']
+  const origins = new Set<string>([
+    'http://localhost:3000',
+    'https://todo-evaluation.vercel.app',
+  ])
 
   if (process.env.BETTER_AUTH_URL) {
-    origins.push(process.env.BETTER_AUTH_URL)
-  }
-  if (process.env.VERCEL_URL) {
-    origins.push(`https://${process.env.VERCEL_URL}`)
+    process.env.BETTER_AUTH_URL
+      .split(',')
+      .map(url => url.trim().replace(/\/$/, ''))
+      .forEach(url => origins.add(url))
   }
 
-  return origins
+  if (process.env.VERCEL_URL) {
+    origins.add(`https://${process.env.VERCEL_URL}`)
+  }
+
+  return Array.from(origins)
 }
+
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
