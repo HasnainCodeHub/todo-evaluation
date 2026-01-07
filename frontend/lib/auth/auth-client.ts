@@ -1,6 +1,5 @@
-// Better Auth Client Configuration for Phase 2.4
+// Better Auth Client Configuration for Phase II
 // This client handles user authentication via Better Auth
-// JWT tokens are generated separately for backend API calls
 
 import { createAuthClient } from 'better-auth/react'
 
@@ -16,9 +15,13 @@ function getAuthClient() {
   // Priority: explicit env var > Vercel URL > current origin (client) > localhost (server)
   let baseURL: string
 
-  // Check explicit environment variable first
-  if (process.env.NEXT_PUBLIC_AUTH_URL || process.env.BETTER_AUTH_URL) {
-    baseURL = (process.env.NEXT_PUBLIC_AUTH_URL || process.env.BETTER_AUTH_URL) as string
+  // Check explicit environment variables first
+  if (process.env.NEXT_PUBLIC_BETTER_AUTH_URL) {
+    baseURL = process.env.NEXT_PUBLIC_BETTER_AUTH_URL
+  } else if (process.env.NEXT_PUBLIC_AUTH_URL) {
+    baseURL = process.env.NEXT_PUBLIC_AUTH_URL
+  } else if (process.env.BETTER_AUTH_URL) {
+    baseURL = process.env.BETTER_AUTH_URL
   } else if (process.env.VERCEL_URL) {
     // Server-side: use Vercel URL if available
     baseURL = `https://${process.env.VERCEL_URL}`
