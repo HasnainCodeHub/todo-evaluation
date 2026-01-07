@@ -32,6 +32,7 @@ const getBaseURL = () => {
 const getTrustedOrigins = () => {
   const origins = [
     'http://localhost:3000',
+    'https://todo-evaluation.vercel.app',
     'https://todo-evolution-liart.vercel.app'
   ]
 
