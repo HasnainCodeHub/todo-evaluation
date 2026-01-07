@@ -18,7 +18,8 @@ if (!process.env.BETTER_AUTH_SECRET) {
 // In development, use localhost
 const getBaseURL = () => {
   if (process.env.BETTER_AUTH_URL) {
-    return process.env.BETTER_AUTH_URL
+    // If multiple URLs are provided, use the first one as baseURL
+    return process.env.BETTER_AUTH_URL.split(',')[0].trim().replace(/\/$/, '')
   }
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`
@@ -30,18 +31,30 @@ const getBaseURL = () => {
 // In production, trust the deployment URL
 // In development, trust localhost
 const getTrustedOrigins = () => {
-  const origins = [
+  const origins = new Set<string>([
     'http://localhost:3000',
     'https://todo-evaluation.vercel.app',
     'https://todo-evolution-liart.vercel.app'
-  ]
+  ])
 
-  const baseURL = getBaseURL()
-  if (baseURL !== 'http://localhost:3000' && !origins.includes(baseURL)) {
-    origins.push(baseURL)
+  if (process.env.BETTER_AUTH_URL) {
+    process.env.BETTER_AUTH_URL
+      .split(',')
+      .map(url => url.trim().replace(/\/$/, ''))
+      .forEach(url => origins.add(url))
   }
 
-  return origins
+  if (process.env.VERCEL_URL) {
+    origins.add(`https://${process.env.VERCEL_URL}`)
+  }
+
+  // Also add the computed baseURL just in case
+  const baseURL = getBaseURL()
+  if (baseURL) {
+    origins.add(baseURL)
+  }
+
+  return Array.from(origins)
 }
 
 export const auth = betterAuth({
