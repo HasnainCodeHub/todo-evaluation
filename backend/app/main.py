@@ -29,9 +29,10 @@ app.add_middleware(
         "https://todo-evolution-liart.vercel.app",  # Vercel frontend production
         "https://todo-evolution.vercel.app",  # Vercel alias (if available)
         "https://evaluation-todo.vercel.app",  # Backend itself (for health checks)
+        "https://frontend-five-flame-95.vercel.app",  # Production frontend
     ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
