@@ -26,7 +26,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",  # Next.js dev server
         "http://127.0.0.1:3000",
-        "https://frontend-five-flame-95.vercel.app",  # Production frontend
+        "https://todo-evaluation.vercel.app",  # New production frontend
     ],
     allow_credentials=True,
     allow_methods=["*"],

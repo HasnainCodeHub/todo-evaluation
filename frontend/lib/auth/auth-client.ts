@@ -4,11 +4,17 @@
 
 import { createAuthClient } from 'better-auth/react'
 
+// The baseURL for the auth client MUST be the URL of the frontend application itself.
+const authBaseURL = process.env.BETTER_AUTH_URL;
+
+if (!authBaseURL) {
+  // This check is critical. In a production environment, we must have this URL.
+  throw new Error("CRITICAL: BETTER_AUTH_URL environment variable is not set.");
+}
+
 // Create Better Auth client
-// Note: Better Auth handles session cookies automatically
-// For API calls to our backend, we generate HS256 JWT tokens separately
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:3000',
+  baseURL: authBaseURL,
 })
 
 // Export typed methods
