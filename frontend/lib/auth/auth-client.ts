@@ -17,8 +17,8 @@ function getAuthClient() {
   let baseURL: string
 
   // Check explicit environment variable first
-  if (process.env.NEXT_PUBLIC_AUTH_URL) {
-    baseURL = process.env.NEXT_PUBLIC_AUTH_URL
+  if (process.env.NEXT_PUBLIC_AUTH_URL || process.env.BETTER_AUTH_URL) {
+    baseURL = (process.env.NEXT_PUBLIC_AUTH_URL || process.env.BETTER_AUTH_URL) as string
   } else if (process.env.VERCEL_URL) {
     // Server-side: use Vercel URL if available
     baseURL = `https://${process.env.VERCEL_URL}`
@@ -55,10 +55,8 @@ export const authClient = {
 }
 
 // Export typed methods
-export const {
-  signIn,
-  signUp,
-  signOut,
-  useSession,
-  getSession
-} = authClient
+export const signIn = (...args: any[]) => (authClient.signIn as any)(...args)
+export const signUp = (...args: any[]) => (authClient.signUp as any)(...args)
+export const signOut = (...args: any[]) => (authClient.signOut as any)(...args)
+export const useSession = () => authClient.useSession
+export const getSession = (...args: any[]) => (authClient.getSession as any)(...args)
