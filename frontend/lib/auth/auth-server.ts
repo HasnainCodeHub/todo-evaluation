@@ -49,6 +49,8 @@ const getTrustedOrigins = (): string[] => {
   // Always trust the known production URL
   origins.add('https://todo-evaluation.vercel.app')
   origins.add('https://todo-evolution-liart.vercel.app')
+  origins.add('https://todo-evaluation-liart.vercel.app')
+  origins.add('https://todo-evolution.vercel.app')
 
   // Trust explicit BETTER_AUTH_URL origins
   if (process.env.BETTER_AUTH_URL) {

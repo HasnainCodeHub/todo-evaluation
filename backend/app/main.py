@@ -31,6 +31,7 @@ app.add_middleware(
         "https://todo-evaluation.vercel.app",  # New frontend domain
         "https://evaluation-todo.vercel.app",  # Backend itself (for health checks)
         "https://frontend-five-flame-95.vercel.app",  # Production frontend
+        "https://todo-evaluation-liart.vercel.app",   # Current known frontend variation
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
