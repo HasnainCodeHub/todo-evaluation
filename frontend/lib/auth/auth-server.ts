@@ -14,29 +14,43 @@ if (!process.env.BETTER_AUTH_SECRET) {
 }
 
 // Determine the base URL for Better Auth
-// In production, use BETTER_AUTH_URL or VERCEL_URL
-// In development, use localhost
-const getBaseURL = () => {
+// PRODUCTION: Must use VERCEL_URL (auto-set by Vercel) or explicit BETTER_AUTH_URL
+// DEVELOPMENT: Falls back to localhost only in development mode
+const getBaseURL = (): string => {
+  // First priority: explicit Better Auth URL (for custom domains)
   if (process.env.BETTER_AUTH_URL) {
     // If multiple URLs are provided, use the first one as baseURL
     return process.env.BETTER_AUTH_URL.split(',')[0].trim().replace(/\/$/, '')
   }
+
+  // Second priority: VERCEL_URL (auto-set by Vercel in production)
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`
   }
-  return 'http://localhost:3000'
+
+  // Development only: allow localhost
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3000'
+  }
+
+  // Production without VERCEL_URL should not happen, but fail explicitly
+  throw new Error(
+    'CRITICAL: No base URL configured for Better Auth in production. ' +
+    'Set BETTER_AUTH_URL or ensure VERCEL_URL is available.'
+  )
 }
 
 // Determine trusted origins
-// In production, trust the deployment URL
-// In development, trust localhost
-const getTrustedOrigins = () => {
-  const origins = new Set<string>([
-    'http://localhost:3000',
-    'https://todo-evaluation.vercel.app',
-    'https://todo-evolution-liart.vercel.app'
-  ])
+// Production: Trust the deployment URLs only
+// Development: Also trust localhost
+const getTrustedOrigins = (): string[] => {
+  const origins = new Set<string>()
 
+  // Always trust the known production URL
+  origins.add('https://todo-evaluation.vercel.app')
+  origins.add('https://todo-evolution-liart.vercel.app')
+
+  // Trust explicit BETTER_AUTH_URL origins
   if (process.env.BETTER_AUTH_URL) {
     process.env.BETTER_AUTH_URL
       .split(',')
@@ -52,6 +66,11 @@ const getTrustedOrigins = () => {
   const baseURL = getBaseURL()
   if (baseURL) {
     origins.add(baseURL)
+  }
+
+  // Development only: trust localhost
+  if (process.env.NODE_ENV === 'development') {
+    origins.add('http://localhost:3000')
   }
 
   return Array.from(origins)

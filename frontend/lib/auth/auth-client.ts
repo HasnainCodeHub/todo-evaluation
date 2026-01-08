@@ -3,59 +3,13 @@
 
 import { createAuthClient } from 'better-auth/react'
 
-// Lazy-initialized auth client to ensure it uses correct URLs on client-side
-let _authClient: ReturnType<typeof createAuthClient> | null = null
+// Better Auth client uses RELATIVE paths for same-origin auth requests.
+// This ensures /api/auth/* routes are called on the SAME domain (frontend),
+// never hardcoded to localhost or an external URL.
+// The baseURL should NOT be set - Better Auth defaults to same-origin.
 
-function getAuthClient() {
-  if (_authClient) {
-    return _authClient
-  }
-
-  // Determine the base URL for Better Auth
-  // Priority: explicit env var > Vercel URL > current origin (client) > localhost (server)
-  let baseURL: string
-
-  // Check explicit environment variables first
-  if (process.env.NEXT_PUBLIC_BETTER_AUTH_URL) {
-    baseURL = process.env.NEXT_PUBLIC_BETTER_AUTH_URL
-  } else if (process.env.NEXT_PUBLIC_AUTH_URL) {
-    baseURL = process.env.NEXT_PUBLIC_AUTH_URL
-  } else if (process.env.BETTER_AUTH_URL) {
-    baseURL = process.env.BETTER_AUTH_URL
-  } else if (process.env.VERCEL_URL) {
-    // Server-side: use Vercel URL if available
-    baseURL = `https://${process.env.VERCEL_URL}`
-  } else if (typeof window !== 'undefined') {
-    // On client-side, always use current origin for same-domain auth
-    baseURL = window.location.origin
-  } else {
-    // Default to localhost for development
-    baseURL = 'http://localhost:3000'
-  }
-
-  _authClient = createAuthClient({ baseURL })
-  return _authClient
-}
-
-// Create Better Auth client proxy that ensures lazy initialization
-// This ensures the client is created with the correct URL on the client-side
-export const authClient = {
-  get signIn() {
-    return getAuthClient().signIn
-  },
-  get signUp() {
-    return getAuthClient().signUp
-  },
-  get signOut() {
-    return getAuthClient().signOut
-  },
-  get useSession() {
-    return getAuthClient().useSession
-  },
-  get getSession() {
-    return getAuthClient().getSession
-  },
-}
+// Create Better Auth client - NO baseURL means same-origin (relative) requests
+export const authClient = createAuthClient()
 
 // Export typed methods
 export const signIn = (...args: any[]) => (authClient.signIn as any)(...args)
