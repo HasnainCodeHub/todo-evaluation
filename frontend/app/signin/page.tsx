@@ -33,7 +33,7 @@ function SignInForm() {
     if (!authState.isLoading && authState.isAuthenticated && !hasRedirected.current) {
       hasRedirected.current = true
       setIsRedirecting(true)
-      router.replace('/dashboard')
+      router.push('/dashboard')
     }
   }, [authState.isLoading, authState.isAuthenticated, router])
 
