@@ -49,9 +49,11 @@ class ApiClient {
     const token = await this.getJwt()
 
     if (!token) {
-      // If we can't get a token, the backend will return 401 anyway.
-      // We don't trigger redirects here; we let the UI AuthGuard handle state.
-      throw new Error('Unauthorized: No valid session token available')
+      // If we can't get a token, it means we are likely unauthenticated.
+      // We log this but don't THROW, as the AuthGuard will handle the redirect.
+      // This prevents console noise and redundant error handling.
+      console.log('[API] No token available, skipping request to:', url)
+      return null as T
     }
 
     const fullUrl = `${this.baseUrl}${url}`

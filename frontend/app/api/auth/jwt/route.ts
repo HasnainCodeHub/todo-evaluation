@@ -8,30 +8,35 @@ import * as jwt from 'jsonwebtoken'
 
 export async function GET(request: NextRequest) {
   try {
-    // Debug logging for production troubleshooting
-    const isDev = process.env.NODE_ENV === 'development'
-    if (isDev) {
-      console.log('[JWT] Request headers:', Object.fromEntries(request.headers.entries()))
-      console.log('[JWT] Cookies:', request.cookies.getAll())
-    }
+    // Basic production logging
+    const url = new URL(request.url)
+    const host = request.headers.get('host')
+    const allCookies = request.cookies.getAll()
+    const sessionCookie = request.cookies.get('better-auth.session_token')
 
     // Get the current session from Better Auth
     const session = await auth.api.getSession({
       headers: request.headers,
     })
 
-    if (isDev) {
-      console.log('[JWT] Session:', session ? 'Found' : 'Not found')
-      if (session) {
-        console.log('[JWT] User ID:', session.user?.id)
-        console.log('[JWT] User email:', session.user?.email)
-      }
-    }
-
     if (!session || !session.user) {
-      console.warn('[JWT] No active session found')
+      // Log failure reasons for production debugging
+      console.warn(`[JWT] 401 Unauthorized:`, {
+        host,
+        domain: url.hostname,
+        cookiesCount: allCookies.length,
+        hasSessionCookie: !!sessionCookie,
+        cookieNames: allCookies.map(c => c.name),
+      })
+
       return NextResponse.json(
-        { error: 'No active session' },
+        {
+          error: 'No active session',
+          debug: process.env.NODE_ENV === 'development' ? {
+            hasCookie: !!sessionCookie,
+            host
+          } : undefined
+        },
         { status: 401 }
       )
     }
@@ -44,15 +49,8 @@ export async function GET(request: NextRequest) {
         iat: Math.floor(Date.now() / 1000),
       },
       process.env.BETTER_AUTH_SECRET!,
-      {
-        algorithm: 'HS256',
-        expiresIn: '24h',
-      }
+      { algorithm: 'HS256', expiresIn: '24h' }
     )
-
-    if (isDev) {
-      console.log('[JWT] Token generated successfully')
-    }
 
     return NextResponse.json({
       token,
@@ -63,7 +61,7 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('[JWT] Generation error:', error)
+    console.error('[JWT] 500 Generation error:', error)
     return NextResponse.json(
       { error: 'Failed to generate JWT token', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

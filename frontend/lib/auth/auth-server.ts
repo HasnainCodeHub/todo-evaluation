@@ -75,8 +75,9 @@ export const auth = betterAuth({
   },
   session: {
     cookieCache: {
-      enabled: true,
-      maxAge: 5 * 60, // Cache for 5 minutes
+      // Disable cookie cache in production to avoid stale resolver state on Edge
+      enabled: process.env.NODE_ENV !== 'production',
+      maxAge: 5 * 60, // Cache for 5 minutes during development
     },
   },
 })
