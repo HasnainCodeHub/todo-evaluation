@@ -43,13 +43,10 @@ export function useAuth() {
           name: session.user.name,
         }
 
-        // Get token from storage if available
-        const token = localStorage.getItem(TOKEN_STORAGE_KEY)
-
         setAuthState({
           isAuthenticated: true,
           user,
-          token,
+          token: null, // Token handled lazily by getAuthToken
           isLoading: false,
           error: null,
         })
@@ -110,8 +107,6 @@ export function useAuth() {
       // Continue
     }
 
-    localStorage.removeItem(TOKEN_STORAGE_KEY)
-
     // State will be updated by useEffect sync via useSession updating to null
   }, [])
 
@@ -131,7 +126,6 @@ export function useAuth() {
       const token = jwtData.token
 
       if (token) {
-        localStorage.setItem(TOKEN_STORAGE_KEY, token)
         setAuthState(prev => ({ ...prev, token }))
       }
 

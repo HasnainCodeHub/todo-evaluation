@@ -28,29 +28,6 @@ function SignInForm() {
 
   const { authState, signIn } = useAuthContext()
 
-  // Redirect to dashboard if already authenticated
-  useEffect(() => {
-    if (!authState.isLoading && authState.isAuthenticated && !hasRedirected.current) {
-      hasRedirected.current = true
-      setIsRedirecting(true)
-      router.push('/dashboard')
-    }
-  }, [authState.isLoading, authState.isAuthenticated, router])
-
-  // Show loading while auth state is resolving from Better Auth
-  if (authState.isLoading || isRedirecting) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-surface-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600 mx-auto mb-4"></div>
-          <p className="text-surface-600">
-            {isRedirecting ? 'Redirecting to dashboard...' : 'Loading auth state...'}
-          </p>
-        </div>
-      </div>
-    )
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -58,11 +35,37 @@ function SignInForm() {
 
     try {
       await signIn(email, password, isSignUp)
-      // The session state update in AuthProvider will trigger the useEffect redirect
+      // SUCCESS: Vercel Production Fix
+      // We do NOT wait for session state sync or re-validate.
+      // Better Auth has set the cookie; redirect to dashboard immediately.
+      router.push("/dashboard")
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication failed')
+    } finally {
       setIsLoading(false)
     }
+  }
+
+  // Redirect to dashboard if already authenticated (e.g. manual navigation to /signin)
+  useEffect(() => {
+    if (!authState.isLoading && authState.isAuthenticated && !hasRedirected.current) {
+      hasRedirected.current = true
+      router.push('/dashboard')
+    }
+  }, [authState.isLoading, authState.isAuthenticated, router])
+
+  // While auth state is resolving
+  if (authState.isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600 mx-auto mb-4"></div>
+          <p className="text-surface-600">
+            Loading auth state...
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (
