@@ -1,6 +1,6 @@
 "use client"
 
-import { useSession } from "better-auth/react"
+import { useSession } from "../../lib/auth/auth-client"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 

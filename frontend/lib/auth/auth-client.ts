@@ -11,9 +11,11 @@ import { createAuthClient } from 'better-auth/react'
 // Create Better Auth client - NO baseURL means same-origin (relative) requests
 export const authClient = createAuthClient()
 
-// Export typed methods
-export const signIn = (...args: any[]) => (authClient.signIn as any)(...args)
-export const signUp = (...args: any[]) => (authClient.signUp as any)(...args)
-export const signOut = (...args: any[]) => (authClient.signOut as any)(...args)
-export const useSession = () => authClient.useSession
-export const getSession = (...args: any[]) => (authClient.getSession as any)(...args)
+// Export typed methods and hooks directly from the client instance
+export const {
+  signIn,
+  signUp,
+  signOut,
+  useSession,
+  getSession,
+} = authClient
