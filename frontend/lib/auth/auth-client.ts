@@ -3,19 +3,13 @@
 
 import { createAuthClient } from 'better-auth/react'
 
-// The baseURL for the auth client MUST be the URL of the frontend application itself.
-// It must be a NEXT_PUBLIC_ variable to be available in the browser.
-const authBaseURL = process.env.NEXT_PUBLIC_BETTER_AUTH_URL;
+// Better Auth client uses RELATIVE paths for same-origin auth requests.
+// This ensures /api/auth/* routes are called on the SAME domain (frontend),
+// never hardcoded to localhost or an external URL.
+// The baseURL should NOT be set - Better Auth defaults to same-origin.
 
-if (!authBaseURL) {
-  // This check is critical. In a production environment, we must have this URL.
-  throw new Error("CRITICAL: NEXT_PUBLIC_BETTER_AUTH_URL environment variable is not set.");
-}
-
-// Create Better Auth client
-export const authClient = createAuthClient({
-  baseURL: authBaseURL,
-})
+// Create Better Auth client - NO baseURL means same-origin (relative) requests
+export const authClient = createAuthClient()
 
 // Export typed methods
 export const {
