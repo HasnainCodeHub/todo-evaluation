@@ -26,12 +26,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",          # Next.js dev server
         "http://127.0.0.1:3000",
-        "https://todo-evolution-liart.vercel.app",  # Vercel frontend production
-        "https://todo-evolution.vercel.app",  # Vercel alias / New production frontend
-        "https://todo-evaluation.vercel.app",  # New frontend domain
-        "https://evaluation-todo.vercel.app",  # Backend itself (for health checks)
-        "https://frontend-five-flame-95.vercel.app",  # Production frontend
-        "https://todo-evaluation-liart.vercel.app",   # Current known frontend variation
+        "https://todo-evaluation.vercel.app",  # Production frontend
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
