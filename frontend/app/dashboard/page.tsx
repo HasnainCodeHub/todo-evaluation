@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthContext } from '../../components/auth/AuthProvider'
@@ -8,6 +8,7 @@ import { useTasks } from '../../hooks/useTasks'
 import TaskForm from '../../components/tasks/TaskForm'
 import TaskList from '../../components/tasks/TaskList'
 import { TaskListSkeleton, StatCardSkeleton } from '../../components/ui/Skeleton'
+import { AuthGuard } from '../../components/auth/AuthGuard'
 
 // Progress ring component
 function ProgressRing({ progress, size = 80, strokeWidth = 8 }: { progress: number; size?: number; strokeWidth?: number }) {
@@ -58,14 +59,13 @@ function ProgressRing({ progress, size = 80, strokeWidth = 8 }: { progress: numb
 // Filter type
 type FilterType = 'all' | 'pending' | 'completed'
 
-export default function DashboardPage() {
+function DashboardContent() {
   const router = useRouter()
   const auth = useAuthContext()
   const tasks = useTasks()
   const [mounted, setMounted] = useState(false)
   const [filter, setFilter] = useState<FilterType>('all')
   const [showWelcome, setShowWelcome] = useState(true)
-  const hasRedirected = useRef(false)
 
   useEffect(() => {
     setMounted(true)
@@ -73,15 +73,6 @@ export default function DashboardPage() {
     const timer = setTimeout(() => setShowWelcome(false), 5000)
     return () => clearTimeout(timer)
   }, [])
-
-  // Redirect to signin if not authenticated (only after auth state resolves)
-  // Use ref to prevent multiple redirect attempts
-  useEffect(() => {
-    if (!auth.authState.isLoading && !auth.authState.isAuthenticated && !hasRedirected.current) {
-      hasRedirected.current = true
-      router.push('/signin')
-    }
-  }, [auth.authState.isLoading, auth.authState.isAuthenticated, router])
 
   // Load tasks on mount
   useEffect(() => {
@@ -91,33 +82,9 @@ export default function DashboardPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.authState.isAuthenticated])
 
-  const handleSignOut = () => {
-    auth.signOut()
+  const handleSignOut = async () => {
+    await auth.signOut()
     router.push('/')
-  }
-
-  // Show loading state while auth is resolving
-  if (auth.authState.isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-surface-50 via-white to-surface-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600 mx-auto mb-4"></div>
-          <p className="text-surface-600">Loading...</p>
-        </div>
-      </div>
-    )
-  }
-
-  // Show redirecting state for unauthenticated users
-  if (!auth.authState.isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-surface-50 via-white to-surface-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600 mx-auto mb-4"></div>
-          <p className="text-surface-600">Redirecting to sign in...</p>
-        </div>
-      </div>
-    )
   }
 
   // Calculate task stats
@@ -450,5 +417,13 @@ export default function DashboardPage() {
         </div>
       </div>
     </main>
+  )
+}
+
+export default function DashboardPage() {
+  return (
+    <AuthGuard>
+      <DashboardContent />
+    </AuthGuard>
   )
 }

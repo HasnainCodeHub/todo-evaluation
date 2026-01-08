@@ -5,6 +5,13 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthContext } from '../../components/auth/AuthProvider'
 
+/**
+ * SignInForm - Handles login and registration.
+ *
+ * CRITICAL (ARCHITECT RULES):
+ * 1. Only uses session state from useAuthContext (which is driven by Better Auth).
+ * 2. Redirects away from /signin if already authenticated.
+ */
 function SignInForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -19,38 +26,26 @@ function SignInForm() {
   const [isRedirecting, setIsRedirecting] = useState(false)
   const hasRedirected = useRef(false)
 
-  const auth = useAuthContext()
-  const { authState } = auth
+  const { authState, signIn } = useAuthContext()
 
-
-  // Handle redirect for authenticated users - use useEffect to avoid render-loop
+  // Redirect to dashboard if already authenticated
   useEffect(() => {
     if (!authState.isLoading && authState.isAuthenticated && !hasRedirected.current) {
       hasRedirected.current = true
       setIsRedirecting(true)
-      router.push('/dashboard')
+      router.replace('/dashboard')
     }
   }, [authState.isLoading, authState.isAuthenticated, router])
 
-  // Show loading while auth state is resolving
-  if (authState.isLoading) {
+  // Show loading while auth state is resolving from Better Auth
+  if (authState.isLoading || isRedirecting) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600 mx-auto mb-4"></div>
-          <p className="text-surface-600">Loading...</p>
-        </div>
-      </div>
-    )
-  }
-
-  // Show redirecting state (controlled by useEffect, not render-time logic)
-  if (isRedirecting || authState.isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-surface-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600 mx-auto mb-4"></div>
-          <p className="text-surface-600">Redirecting to dashboard...</p>
+          <p className="text-surface-600">
+            {isRedirecting ? 'Redirecting to dashboard...' : 'Loading auth state...'}
+          </p>
         </div>
       </div>
     )
@@ -62,14 +57,10 @@ function SignInForm() {
     setIsLoading(true)
 
     try {
-      await auth.signIn(email, password, isSignUp)
-      // Set redirecting state and let useEffect handle the redirect
-      hasRedirected.current = true
-      setIsRedirecting(true)
-      router.push('/dashboard')
+      await signIn(email, password, isSignUp)
+      // The session state update in AuthProvider will trigger the useEffect redirect
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication failed')
-    } finally {
       setIsLoading(false)
     }
   }
@@ -117,7 +108,7 @@ function SignInForm() {
           {/* Features list */}
           <div className="space-y-4">
             {[
-              'Secure JWT authentication',
+              'Secure session management',
               'Real-time task updates',
               'Beautiful, responsive design',
             ].map((feature) => (
