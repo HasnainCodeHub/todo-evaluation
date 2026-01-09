@@ -59,7 +59,6 @@ const tasks = await fetch('/api/tasks');
 ## Authentication Integration
 
 - Better Auth handles session management
-- JWT tokens are managed by the auth library
 - Protected routes use auth middleware
 - User context available via auth hooks
 

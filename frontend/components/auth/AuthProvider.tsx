@@ -8,7 +8,6 @@ interface AuthContextType {
   authState: AuthState
   signIn: (email: string, password: string, isSignUp?: boolean) => Promise<void>
   signOut: () => void
-  getAuthToken: () => Promise<string | null>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)

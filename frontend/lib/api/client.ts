@@ -1,6 +1,6 @@
 // Centralized API Client for Phase 2.4
-// All API requests include JWT token in Authorization header
 // Handles 401/403 responses appropriately
+// Bridge Pattern: Better Auth -> JWT -> FastAPI
 
 import config from '../config'
 import type { Task, TaskCreateRequest, TaskUpdateRequest, ApiError } from '../../types/task'
@@ -8,10 +8,16 @@ import type { Task, TaskCreateRequest, TaskUpdateRequest, ApiError } from '../..
 /**
  * ApiClient - Centralized fetch wrapper for backend FastAPI communication.
  *
- * CRITICAL (ARCHITECT RULES):
- * 1. Exchanges Better Auth session for a JWT token via /api/auth/jwt BEFORE backend calls.
- * 2. Attaches token as Authorization: Bearer <token>.
- * 3. NEVER uses /api/auth/jwt response to decide UI routing.
+ * CRITICAL ARCHITECTURE (Bridge Pattern):
+ * 1. Frontend uses Better Auth for session management
+ * 2. JWT bridge route converts Better Auth session to JWT
+ * 3. This client fetches JWT and sends to FastAPI backend
+ * 4. Backend validates JWT and processes requests
+ *
+ * RULES:
+ * - NEVER bypass the bridge
+ * - NEVER generate JWT client-side
+ * - ALWAYS use NEXT_PUBLIC_API_URL for backend
  */
 class ApiClient {
   private get baseUrl(): string {
@@ -19,25 +25,36 @@ class ApiClient {
   }
 
   /**
-   * getJwt - Exchanges the Better Auth session cookie for a short-lived JWT token.
-   * This is called before every backend request to ensure we have a fresh token.
+   * Fetch JWT from the bridge route.
+   * The bridge validates Better Auth session and returns a signed JWT.
    */
-  private async getJwt(): Promise<string | null> {
+  private async getJWT(): Promise<string> {
     try {
       const response = await fetch('/api/auth/jwt', {
-        credentials: 'include', // Send Better Auth session cookies
+        method: 'GET',
+        credentials: 'include', // Send Better Auth cookies to our own API
       })
 
+      if (response.status === 401) {
+        throw new Error('SESSION_INVALID')
+      }
+
       if (!response.ok) {
-        // 401 here is EXPECTED when unauthenticated and must NOT trigger redirects.
-        return null
+        throw new Error('Failed to obtain authentication token')
       }
 
       const data = await response.json()
-      return data.token || null
-    } catch (err) {
-      console.error('[API] JWT exchange failed:', err)
-      return null
+      if (!data.token) {
+        throw new Error('No token returned from bridge')
+      }
+
+      return data.token
+    } catch (error) {
+      if (error instanceof Error && error.message === 'SESSION_INVALID') {
+        throw error
+      }
+      console.error('[API Client] JWT bridge error:', error)
+      throw new Error('Authentication failed. Please sign in again.')
     }
   }
 
@@ -45,17 +62,6 @@ class ApiClient {
     url: string,
     options: RequestInit = {}
   ): Promise<T> {
-    // Phase 4 Rule: First fetch /api/auth/jwt
-    const token = await this.getJwt()
-
-    if (!token) {
-      // If we can't get a token, it means we are likely unauthenticated.
-      // We log this but don't THROW, as the AuthGuard will handle the redirect.
-      // This prevents console noise and redundant error handling.
-      console.log('[API] No token available, skipping request to:', url)
-      return null as T
-    }
-
     const fullUrl = `${this.baseUrl}${url}`
 
     // Debug logging in development
@@ -63,13 +69,26 @@ class ApiClient {
       console.log(`[API] ${options.method || 'GET'} ${fullUrl}`)
     }
 
+    // Step 1: Get JWT from bridge
+    let jwt: string
+    try {
+      jwt = await this.getJWT()
+    } catch (error) {
+      if (error instanceof Error && error.message === 'SESSION_INVALID') {
+        // Session is invalid, frontend should redirect to signin
+        throw new Error('SESSION_INVALID')
+      }
+      throw error
+    }
+
+    // Step 2: Call backend with JWT in Authorization header
     let response: Response
     try {
       response = await fetch(fullUrl, {
         ...options,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${jwt}`, // JWT for FastAPI
           ...options.headers,
         },
       })
@@ -80,8 +99,8 @@ class ApiClient {
 
     // Handle 401 Unauthorized from BACKEND
     if (response.status === 401) {
-      // Token might be expired or invalid on backend
-      throw new Error('Session expired or unauthorized. Please sign in again.')
+      // JWT was rejected by backend (expired or invalid)
+      throw new Error('SESSION_INVALID')
     }
 
     // Handle other errors

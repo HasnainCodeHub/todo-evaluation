@@ -1,5 +1,5 @@
 // Authentication Hook for Phase 2.4
-// Integrates Better Auth with JWT token generation for backend API calls
+// Integrates Better Auth for session management
 
 import { useState, useCallback, useEffect } from 'react'
 import { authClient } from '../lib/auth/auth-client'
@@ -13,13 +13,9 @@ export interface User {
 export interface AuthState {
   isAuthenticated: boolean
   user: User | null
-  token: string | null
   isLoading: boolean
   error: string | null
 }
-
-// Token storage key
-const TOKEN_STORAGE_KEY = 'todo_auth_token'
 
 export function useAuth() {
   const { data: session, isPending: sessionPending } = authClient.useSession()
@@ -27,7 +23,6 @@ export function useAuth() {
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
     user: null,
-    token: null,
     isLoading: true,
     error: null,
   })
@@ -46,7 +41,6 @@ export function useAuth() {
         setAuthState({
           isAuthenticated: true,
           user,
-          token: null, // Token handled lazily by getAuthToken
           isLoading: false,
           error: null,
         })
@@ -55,7 +49,6 @@ export function useAuth() {
         setAuthState({
           isAuthenticated: false,
           user: null,
-          token: null,
           isLoading: false,
           error: null,
         })
@@ -110,36 +103,9 @@ export function useAuth() {
     // State will be updated by useEffect sync via useSession updating to null
   }, [])
 
-  // Lazy JWT token getter for API calls
-  // This is the ONLY legitimate use of /api/auth/jwt
-  const getAuthToken = useCallback(async () => {
-    try {
-      const jwtResponse = await fetch('/api/auth/jwt', {
-        credentials: 'include',
-      })
-
-      if (!jwtResponse.ok) {
-        return null
-      }
-
-      const jwtData = await jwtResponse.json()
-      const token = jwtData.token
-
-      if (token) {
-        setAuthState(prev => ({ ...prev, token }))
-      }
-
-      return token
-    } catch (err) {
-      console.error('Failed to fetch JWT token:', err)
-      return null
-    }
-  }, [])
-
   return {
     authState,
     signIn,
     signOut,
-    getAuthToken,
   }
 }

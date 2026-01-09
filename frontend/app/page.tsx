@@ -64,7 +64,7 @@ const features = [
       </svg>
     ),
     title: 'Enterprise Security',
-    description: 'JWT authentication with Better Auth. Your data is encrypted, isolated, and protected.',
+    description: 'Secure authentication with Better Auth. Your data is encrypted, isolated, and protected.',
     gradient: 'from-amber-500 to-orange-500',
   },
 ]

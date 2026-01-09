@@ -1,69 +1,80 @@
-// Custom JWT Token Generation Endpoint
-// Generates JWT tokens for API authentication from Better Auth sessions
-// Phase 2.4: Frontend Integration
+// JWT Bridge API Route
+// Converts Better Auth session to JWT for FastAPI backend authentication
+// Phase 2.4: Bridge Pattern Implementation
 
-import { auth } from '@/lib/auth/auth-server'
 import { NextRequest, NextResponse } from 'next/server'
-import * as jwt from 'jsonwebtoken'
+import jwt from 'jsonwebtoken'
+import { auth } from '@/lib/auth/auth-server'
 
+/**
+ * GET /api/auth/jwt
+ *
+ * CRITICAL BRIDGE ROUTE:
+ * 1. Reads Better Auth session (server-side only)
+ * 2. Validates session exists
+ * 3. Generates JWT for FastAPI backend
+ * 4. Returns signed token
+ *
+ * SECURITY RULES:
+ * - Runs server-side only (no client access to secrets)
+ * - Uses same JWT_SECRET as backend (BETTER_AUTH_SECRET)
+ * - Tokens expire in 15 minutes
+ * - NO Better Auth secret exposure
+ */
 export async function GET(request: NextRequest) {
   try {
-    // Basic production logging
-    const url = new URL(request.url)
-    const host = request.headers.get('host')
-    const allCookies = request.cookies.getAll()
-    const sessionCookie = request.cookies.get('better-auth.session_token')
+    // Get Better Auth session from cookies (server-side)
+    const session = await auth.api.getSession({ headers: request.headers })
 
-    // Get the current session from Better Auth
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    })
-
-    if (!session || !session.user) {
-      // Log failure reasons for production debugging
-      console.warn(`[JWT] 401 Unauthorized:`, {
-        host,
-        domain: url.hostname,
-        cookiesCount: allCookies.length,
-        hasSessionCookie: !!sessionCookie,
-        cookieNames: allCookies.map(c => c.name),
-      })
-
+    // Session validation
+    if (!session?.user) {
       return NextResponse.json(
-        {
-          error: 'No active session',
-          debug: process.env.NODE_ENV === 'development' ? {
-            hasCookie: !!sessionCookie,
-            host
-          } : undefined
-        },
+        { error: 'No active session' },
         { status: 401 }
       )
     }
 
-    // Create JWT token with backend-compatible claims
+    // Extract user data from Better Auth session
+    const userId = session.user.id
+    const email = session.user.email
+
+    if (!userId || !email) {
+      return NextResponse.json(
+        { error: 'Invalid session data' },
+        { status: 401 }
+      )
+    }
+
+    // Get JWT secret from environment
+    const jwtSecret = process.env.BETTER_AUTH_SECRET
+    if (!jwtSecret) {
+      console.error('[JWT Bridge] BETTER_AUTH_SECRET not configured')
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      )
+    }
+
+    // Generate JWT with claims matching backend expectations
     const token = jwt.sign(
       {
-        sub: session.user.id, // user_id
-        email: session.user.email,
-        iat: Math.floor(Date.now() / 1000),
+        sub: userId,        // Backend expects 'sub' for user_id
+        email: email,       // Backend expects 'email'
       },
-      process.env.BETTER_AUTH_SECRET!,
-      { algorithm: 'HS256', expiresIn: '24h' }
+      jwtSecret,
+      {
+        algorithm: 'HS256', // Must match backend JWT_ALGORITHM
+        expiresIn: '15m',   // Token valid for 15 minutes
+      }
     )
 
-    return NextResponse.json({
-      token,
-      user: {
-        id: session.user.id,
-        email: session.user.email,
-        name: session.user.name,
-      },
-    })
+    // Return JWT to frontend
+    return NextResponse.json({ token })
+
   } catch (error) {
-    console.error('[JWT] 500 Generation error:', error)
+    console.error('[JWT Bridge] Error generating token:', error)
     return NextResponse.json(
-      { error: 'Failed to generate JWT token', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to generate authentication token' },
       { status: 500 }
     )
   }

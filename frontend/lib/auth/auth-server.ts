@@ -44,9 +44,12 @@ const getTrustedOrigins = (): string[] => {
     origins.add(baseURL)
   }
 
-  // Developer localhost
+  // Developer localhost - accept common ports
   if (process.env.NODE_ENV === 'development') {
     origins.add('http://localhost:3000')
+    origins.add('http://localhost:3001')
+    origins.add('http://localhost:3002')
+    origins.add('http://localhost:3003')  // Accept common Next.js dev ports
   }
 
   return Array.from(origins)
