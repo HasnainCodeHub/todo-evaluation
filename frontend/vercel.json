@@ -7,6 +7,6 @@
   "outputDirectory": ".next",
   "regions": ["iad1"],
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://evaluation-todo.vercel.app"
+    "NEXT_PUBLIC_API_URL": "https://todo-backend-xi-eosin.vercel.app"
   }
 }
