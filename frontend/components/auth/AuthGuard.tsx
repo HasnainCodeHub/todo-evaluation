@@ -38,7 +38,10 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   }
 
   // Handle explicit error states from useSession
-  if (error) {
+  // Note: Better Auth may return empty object {} as error, which is truthy
+  // Only treat as error if it has actual content
+  const hasError = error && typeof error === 'object' && Object.keys(error).length > 0
+  if (hasError) {
     console.error("[AuthGuard] BetterAuth error:", error)
     router.replace("/signin")
     return null
