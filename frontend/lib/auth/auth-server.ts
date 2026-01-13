@@ -42,7 +42,7 @@ const getTrustedOrigins = (): string[] => {
 
   // Core production URLs
   origins.add('https://frontend-gamma-three-88.vercel.app')
-  origins.add('https://evaluation-todo.vercel.app')
+  origins.add('https://todo-evaluation.vercel.app/')
   // Dynamic origin from env vars
   const baseURL = getBaseURL()
   if (baseURL) {
