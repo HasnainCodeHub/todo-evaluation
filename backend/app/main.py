@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Evolution of Todo API",
-    description="REST API for the Evolution of Todo project (Phase 2.2)",
-    version="0.1.0"
+    description="REST API for the Evolution of Todo project - Phase II Authentication Complete",
+    version="0.2.0"
 )
 
 # Configure CORS for frontend communication
@@ -24,15 +24,21 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",          # Next.js dev server (default)",          # Next.js dev server (alt port)
+        "http://localhost:3000",  # Next.js dev server
         "http://127.0.0.1:3000",
-        "https://todo-evaluation.vercel.app",  # Production FRONTEND
+        "https://frontend-gamma-three-88.vercel.app",  # Vercel frontend production
+        "https://todo-evaluation.vercel.app",  # Vercel alias (if available)
+        "https://evaluation-todo.vercel.app",  # Backend itself (for health checks)
+
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
+# Phase II Authentication: JWT-based authorization
+# All task endpoints require valid JWT from Better Auth frontend
+# User isolation enforced via get_current_user dependency
 
 # Request logging middleware for debugging
 @app.middleware("http")
@@ -111,7 +117,9 @@ async def root():
     """API root endpoint with service information."""
     return {
         "service": "Evolution of Todo API",
-        "version": "0.1.0",
+        "version": "0.2.0",
+        "phase": "Phase II - Authentication Complete",
+        "auth": "JWT (Better Auth + FastAPI)",
         "status": "running",
         "docs": "/docs",
         "health": "/health"

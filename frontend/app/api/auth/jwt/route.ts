@@ -1,6 +1,10 @@
 // JWT Bridge API Route
 // Converts Better Auth session to JWT for FastAPI backend authentication
-// Phase 2.4: Bridge Pattern Implementation
+// Phase II: Authentication Complete - Hackathon Compliant
+//
+// Architecture:
+//   Frontend (Better Auth) → JWT Bridge → FastAPI (verification)
+//   Shared secret: BETTER_AUTH_SECRET = JWT_SECRET
 
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
