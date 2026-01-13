@@ -6,6 +6,9 @@
 //   Frontend (Better Auth) → JWT Bridge → FastAPI (verification)
 //   Shared secret: BETTER_AUTH_SECRET = JWT_SECRET
 
+// Force Node.js runtime for production (jsonwebtoken incompatible with Edge)
+export const runtime = "nodejs";
+
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { auth } from '@/lib/auth/auth-server'
