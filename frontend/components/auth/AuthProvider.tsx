@@ -6,7 +6,7 @@ import type { User, AuthState } from '../../hooks/useAuth'
 
 interface AuthContextType {
   authState: AuthState
-  signIn: (email: string, password: string, isSignUp?: boolean) => Promise<void>
+  signIn: (email: string, password: string, isSignUp?: boolean, name?: string) => Promise<void>
   signOut: () => void
 }
 

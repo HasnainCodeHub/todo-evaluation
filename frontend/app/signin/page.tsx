@@ -34,7 +34,7 @@ function SignInForm() {
     setIsLoading(true)
 
     try {
-      await signIn(email, password, isSignUp)
+      await signIn(email, password, isSignUp, isSignUp ? name : undefined)
       // SUCCESS: Vercel Production Fix
       // We do NOT wait for session state sync or re-validate.
       // Better Auth has set the cookie; redirect to dashboard immediately.
@@ -205,7 +205,7 @@ function SignInForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 required
-                minLength={6}
+                minLength={8}
                 className="input-modern"
               />
             </div>

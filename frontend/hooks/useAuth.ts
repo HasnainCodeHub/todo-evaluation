@@ -56,7 +56,7 @@ export function useAuth() {
     }
   }, [session, sessionPending])
 
-  const signIn = useCallback(async (email: string, password: string, isSignUp: boolean = false) => {
+  const signIn = useCallback(async (email: string, password: string, isSignUp: boolean = false, name?: string) => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }))
 
     try {
@@ -66,7 +66,7 @@ export function useAuth() {
         result = await authClient.signUp.email({
           email,
           password,
-          name: email.split('@')[0],
+          name: name || email.split('@')[0],
         })
       } else {
         result = await authClient.signIn.email({
