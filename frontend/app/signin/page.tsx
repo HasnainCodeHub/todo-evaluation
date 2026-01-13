@@ -3,14 +3,17 @@
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { useSession } from '../../lib/auth/auth-client'
 import { useAuthContext } from '../../components/auth/AuthProvider'
 
 /**
  * SignInForm - Handles login and registration.
  *
  * CRITICAL (ARCHITECT RULES):
- * 1. Only uses session state from useAuthContext (which is driven by Better Auth).
- * 2. Redirects away from /signin if already authenticated.
+ * 1. Uses Better Auth useSession() directly for session state (SINGLE SOURCE OF TRUTH)
+ * 2. Redirects to /dashboard when session status === "authenticated"
+ * 3. NO manual JWT checks, NO localStorage checks, NO cookie checks
+ * 4. Auth context used ONLY for signIn/signOut methods
  */
 function SignInForm() {
   const router = useRouter()
@@ -23,10 +26,12 @@ function SignInForm() {
   const [name, setName] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [isRedirecting, setIsRedirecting] = useState(false)
   const hasRedirected = useRef(false)
 
-  const { authState, signIn } = useAuthContext()
+  // CRITICAL: Use Better Auth session directly (single source of truth)
+  const { data: session, isPending: sessionPending } = useSession()
+  // Use context only for signIn method
+  const { signIn } = useAuthContext()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,37 +40,51 @@ function SignInForm() {
 
     try {
       await signIn(email, password, isSignUp, isSignUp ? name : undefined)
-      // SUCCESS: Production-safe redirect
-      // Use hard navigation to ensure:
-      // 1. New cookie is sent with the request
-      // 2. Middleware runs with fresh cookie state
-      // 3. Session is fetched fresh on the new page
-      // Do NOT use router.push() - it causes race conditions with useSession()
-      window.location.href = "/dashboard"
+      // SUCCESS: Don't manually redirect here
+      // The useEffect below will detect session change and redirect
+      // This prevents race conditions with session state
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication failed')
       setIsLoading(false)
     }
-    // Note: Don't setIsLoading(false) on success - page is redirecting
   }
 
-  // Redirect to dashboard if already authenticated (e.g. manual navigation to /signin)
+  // CRITICAL: Redirect based on Better Auth session state ONLY
+  // This effect runs when session changes from null to authenticated
   useEffect(() => {
-    if (!authState.isLoading && authState.isAuthenticated && !hasRedirected.current) {
+    // Only redirect when:
+    // 1. Session is not pending (loading complete)
+    // 2. Session exists with a user
+    // 3. Haven't already redirected
+    if (!sessionPending && session?.user && !hasRedirected.current) {
       hasRedirected.current = true
-      // Use hard navigation for consistent behavior
+      // Use hard navigation for production reliability
       window.location.href = '/dashboard'
     }
-  }, [authState.isLoading, authState.isAuthenticated])
+  }, [sessionPending, session])
 
-  // While auth state is resolving
-  if (authState.isLoading) {
+  // While session is being fetched
+  if (sessionPending) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600 mx-auto mb-4"></div>
           <p className="text-surface-600">
-            Loading auth state...
+            Checking session...
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // If already authenticated, show redirecting state
+  if (session?.user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600 mx-auto mb-4"></div>
+          <p className="text-surface-600">
+            Redirecting to dashboard...
           </p>
         </div>
       </div>
