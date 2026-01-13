@@ -35,24 +35,28 @@ function SignInForm() {
 
     try {
       await signIn(email, password, isSignUp, isSignUp ? name : undefined)
-      // SUCCESS: Vercel Production Fix
-      // We do NOT wait for session state sync or re-validate.
-      // Better Auth has set the cookie; redirect to dashboard immediately.
-      router.push("/dashboard")
+      // SUCCESS: Production-safe redirect
+      // Use hard navigation to ensure:
+      // 1. New cookie is sent with the request
+      // 2. Middleware runs with fresh cookie state
+      // 3. Session is fetched fresh on the new page
+      // Do NOT use router.push() - it causes race conditions with useSession()
+      window.location.href = "/dashboard"
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication failed')
-    } finally {
       setIsLoading(false)
     }
+    // Note: Don't setIsLoading(false) on success - page is redirecting
   }
 
   // Redirect to dashboard if already authenticated (e.g. manual navigation to /signin)
   useEffect(() => {
     if (!authState.isLoading && authState.isAuthenticated && !hasRedirected.current) {
       hasRedirected.current = true
-      router.push('/dashboard')
+      // Use hard navigation for consistent behavior
+      window.location.href = '/dashboard'
     }
-  }, [authState.isLoading, authState.isAuthenticated, router])
+  }, [authState.isLoading, authState.isAuthenticated])
 
   // While auth state is resolving
   if (authState.isLoading) {

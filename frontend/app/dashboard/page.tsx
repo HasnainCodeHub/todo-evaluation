@@ -84,7 +84,8 @@ function DashboardContent() {
 
   const handleSignOut = async () => {
     await auth.signOut()
-    router.push('/')
+    // Use hard navigation to ensure cookie is cleared and middleware runs fresh
+    window.location.href = '/'
   }
 
   // Calculate task stats

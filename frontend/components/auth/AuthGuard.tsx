@@ -1,8 +1,7 @@
 "use client"
 
 import { useSession } from "../../lib/auth/auth-client"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 
 /**
  * AuthGuard - Production-grade route guard for protected pages.
@@ -12,18 +11,22 @@ import { useEffect } from "react"
  * 2. NEVER calls /api/auth/jwt or any backend APIs for routing decisions.
  * 3. Shows loading state while session is resolving.
  * 4. Redirects to /signin if session is missing.
+ * 5. Uses hard navigation for production consistency.
  */
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { data: session, isPending } = useSession()
-  const router = useRouter()
+  const hasRedirected = useRef(false)
 
   useEffect(() => {
     // Only redirect once we explicitly know there is No session
-    if (!isPending && !session?.user) {
+    // Use ref to prevent double redirects
+    if (!isPending && !session?.user && !hasRedirected.current) {
+      hasRedirected.current = true
       console.log("[AuthGuard] No session found, redirecting to /signin")
-      router.replace("/signin")
+      // Use hard navigation for consistent production behavior
+      window.location.href = "/signin"
     }
-  }, [isPending, session, router])
+  }, [isPending, session])
 
   // While loading, show a neutral loading state
   if (isPending) {
