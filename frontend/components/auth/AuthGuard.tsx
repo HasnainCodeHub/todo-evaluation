@@ -2,7 +2,7 @@
 
 import { useSession } from "../../lib/auth/auth-client"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 
 /**
  * AuthGuard - Production-grade route guard for protected pages.
@@ -14,7 +14,7 @@ import { useEffect, useState } from "react"
  * 4. Redirects to /signin if session is missing.
  */
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { data: session, isPending, error } = useSession()
+  const { data: session, isPending } = useSession()
   const router = useRouter()
 
   useEffect(() => {
@@ -35,16 +35,6 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     )
-  }
-
-  // Handle explicit error states from useSession
-  // Note: Better Auth may return empty object {} as error, which is truthy
-  // Only treat as error if it has actual content
-  const hasError = error && typeof error === 'object' && Object.keys(error).length > 0
-  if (hasError) {
-    console.error("[AuthGuard] BetterAuth error:", error)
-    router.replace("/signin")
-    return null
   }
 
   // If no session, show nothing (useEffect will handle redirect)

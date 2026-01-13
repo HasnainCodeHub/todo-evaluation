@@ -5,6 +5,11 @@
 import { betterAuth } from 'better-auth'
 import { Pool } from 'pg'
 
+// Debug logging for environment variables
+console.log('[Auth Server] Initializing Better Auth...')
+console.log('[Auth Server] DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'MISSING')
+console.log('[Auth Server] BETTER_AUTH_SECRET:', process.env.BETTER_AUTH_SECRET ? 'SET' : 'MISSING')
+
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL is required')
 }
@@ -36,8 +41,8 @@ const getTrustedOrigins = (): string[] => {
   const origins = new Set<string>()
 
   // Core production URLs
-  origins.add('https://todo-evaluation.vercel.app')
-
+  origins.add('https://frontend-gamma-three-88.vercel.app')
+  origins.add('https://evaluation-todo.vercel.app')
   // Dynamic origin from env vars
   const baseURL = getBaseURL()
   if (baseURL) {
@@ -55,16 +60,26 @@ const getTrustedOrigins = (): string[] => {
   return Array.from(origins)
 }
 
+// Create database pool with error handling
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+  max: 10,
+})
+
+// Log pool errors
+pool.on('error', (err) => {
+  console.error('[Auth Server] Database pool error:', err.message)
+})
+
+console.log('[Auth Server] Database pool created')
+
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
   // Pass Pool instance directly - Better Auth handles Kysely internally
-  database: new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-      rejectUnauthorized: false,
-    },
-    max: 10,
-  }),
+  database: pool,
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
