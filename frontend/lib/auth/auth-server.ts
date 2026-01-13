@@ -1,101 +1,84 @@
 // Better Auth Server Configuration
-// This configures Better Auth for handling user authentication
-// Phase 2.4: Authentication Integration
+// Phase II – Hackathon Compliant
+// Frontend-only authentication authority
 
-import { betterAuth } from 'better-auth'
-import { Pool } from 'pg'
+import { betterAuth } from "better-auth"
+import { Pool } from "pg"
 
-// Debug logging for environment variables
-console.log('[Auth Server] Initializing Better Auth...')
-console.log('[Auth Server] DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'MISSING')
-console.log('[Auth Server] BETTER_AUTH_SECRET:', process.env.BETTER_AUTH_SECRET ? 'SET' : 'MISSING')
+/* ------------------------------------------------------------------ */
+/* ENV VALIDATION                                                      */
+/* ------------------------------------------------------------------ */
 
 if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL is required')
+  throw new Error("DATABASE_URL is required for Better Auth")
 }
 
 if (!process.env.BETTER_AUTH_SECRET) {
-  throw new Error('BETTER_AUTH_SECRET is required')
+  throw new Error("BETTER_AUTH_SECRET is required for Better Auth")
 }
 
-/**
- * Determine the base URL for Better Auth.
- * CRITICAL: In Vercel production, BETTER_AUTH_URL should be set manually.
- * Fallback to VERCEL_URL if provided, else localhost.
- */
-const getBaseURL = (): string => {
-  if (process.env.BETTER_AUTH_URL) {
-    return process.env.BETTER_AUTH_URL.replace(/\/$/, '')
-  }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL.replace(/\/$/, '')}`
-  }
-  return 'http://localhost:3000'
-}
+/* ------------------------------------------------------------------ */
+/* CONSTANTS (DO NOT COMPUTE THESE DYNAMICALLY)                        */
+/* ------------------------------------------------------------------ */
 
-/**
- * Determine trusted origins.
- * Includes both the primary production URL and any Vercel preview URLs.
- */
-const getTrustedOrigins = (): string[] => {
-  const origins = new Set<string>()
+// 🔒 Single canonical frontend URL (production)
+const PROD_FRONTEND_URL = "https://todo-evaluation.vercel.app"
 
-  // Core production URLs
-  origins.add('https://frontend-gamma-three-88.vercel.app')
-  origins.add('https://todo-evaluation.vercel.app/')
-  // Dynamic origin from env vars
-  const baseURL = getBaseURL()
-  if (baseURL) {
-    origins.add(baseURL)
-  }
+// Local dev URL
+const DEV_FRONTEND_URL = "http://localhost:3000"
 
-  // Developer localhost - accept common ports
-  if (process.env.NODE_ENV === 'development') {
-    origins.add('http://localhost:3000')
-    origins.add('http://localhost:3001')
-    origins.add('http://localhost:3002')
-    origins.add('http://localhost:3003')  // Accept common Next.js dev ports
-  }
+/* ------------------------------------------------------------------ */
+/* DATABASE                                                            */
+/* ------------------------------------------------------------------ */
 
-  return Array.from(origins)
-}
-
-// Create database pool with error handling
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ssl: { rejectUnauthorized: false },
   max: 10,
 })
 
-// Log pool errors
-pool.on('error', (err) => {
-  console.error('[Auth Server] Database pool error:', err.message)
+pool.on("error", (err) => {
+  console.error("[Better Auth] Database pool error:", err)
 })
 
-console.log('[Auth Server] Database pool created')
+/* ------------------------------------------------------------------ */
+/* BETTER AUTH CONFIGURATION                                           */
+/* ------------------------------------------------------------------ */
 
 export const auth = betterAuth({
+  // Shared secret (also used by FastAPI for JWT verification)
   secret: process.env.BETTER_AUTH_SECRET,
-  // Pass Pool instance directly - Better Auth handles Kysely internally
+
+  // Better Auth manages its own tables
   database: pool,
+
+  // Auth methods
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
   },
-  // Ensure absolute URL in production for cookie scoping
-  baseURL: getBaseURL(),
-  trustedOrigins: getTrustedOrigins(),
-  // Production-only settings
+
+  // 🔐 CRITICAL: fixed base URL for cookies & CSRF
+  baseURL:
+    process.env.NODE_ENV === "production"
+      ? PROD_FRONTEND_URL
+      : DEV_FRONTEND_URL,
+
+  // 🔐 CRITICAL: only frontend origins
+  trustedOrigins: [
+    PROD_FRONTEND_URL,
+    DEV_FRONTEND_URL,
+  ],
+
+  // Cookie security
   advanced: {
-    useSecureCookies: process.env.NODE_ENV === 'production',
+    useSecureCookies: process.env.NODE_ENV === "production",
   },
+
+  // Avoid edge-session weirdness
   session: {
     cookieCache: {
-      // Disable cookie cache in production to avoid stale resolver state on Edge
-      enabled: process.env.NODE_ENV !== 'production',
-      maxAge: 5 * 60, // Cache for 5 minutes during development
+      enabled: false,
     },
   },
 })
