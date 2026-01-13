@@ -176,6 +176,7 @@ function SignInForm() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="John Doe"
                   required
+                  autoComplete="name"
                   className="input-modern"
                 />
               </div>
@@ -191,6 +192,7 @@ function SignInForm() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
+                autoComplete="email"
                 className="input-modern"
               />
             </div>
@@ -206,6 +208,7 @@ function SignInForm() {
                 placeholder="Enter your password"
                 required
                 minLength={8}
+                autoComplete={isSignUp ? "new-password" : "current-password"}
                 className="input-modern"
               />
             </div>

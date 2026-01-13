@@ -9,7 +9,9 @@ export function middleware(request: NextRequest) {
   const isPublicPath = publicPaths.includes(pathname)
 
   // Get the session token from cookies
+  // Check both regular and secure cookie names (production uses __Secure- prefix)
   const sessionToken = request.cookies.get('better-auth.session_token')
+    || request.cookies.get('__Secure-better-auth.session_token')
   const hasSession = !!sessionToken
 
   // Redirect authenticated users away from auth pages to dashboard
