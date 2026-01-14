@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { useSession, signIn } from '@/lib/auth/auth-client'
+import { useSession, signIn, signUp } from '@/lib/auth/auth-client'
 
 function SignInForm() {
   const router = useRouter()
@@ -28,17 +28,24 @@ function SignInForm() {
     }
   }, [isPending, session])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
     try {
-      await signIn.email({
-        email,
-        password,
-        name: isSignUp ? name : undefined,
-      })
+      if (isSignUp) {
+        await signUp.email({
+          email,
+          password,
+          name,
+        })
+      } else {
+        await signIn.email({
+          email,
+          password,
+        })
+      }
       // Redirect handled by session effect
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication failed')
