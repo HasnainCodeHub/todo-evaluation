@@ -1,6 +1,3 @@
-// Better Auth Client Configuration for Phase II
-// This client handles user authentication via Better Auth
-
 import { createAuthClient } from 'better-auth/react'
 
 // Better Auth client uses RELATIVE paths for same-origin auth requests.
