@@ -38,6 +38,31 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['pg', 'better-sqlite3', 'jsonwebtoken'],
   },
+  // Ensure middleware doesn't bundle Node.js code
+  webpack: (config, { isServer, webpack }) => {
+    if (!isServer) {
+      return config
+    }
+    // Prevent bundling Node.js modules into middleware
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      path: false,
+      os: false,
+      crypto: false,
+      stream: false,
+      buffer: false,
+      util: false,
+      events: false,
+      net: false,
+      tls: false,
+      child_process: false,
+      module: false,
+      dns: false,
+      readline: false,
+    }
+    return config
+  },
 }
 
 module.exports = nextConfig
