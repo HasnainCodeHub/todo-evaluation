@@ -33,6 +33,11 @@ console.log('[Build Env] DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Exclude Node.js dependencies from server components bundling
+  // Note: Middleware uses Edge runtime and bundles separately
+  experimental: {
+    serverComponentsExternalPackages: ['pg', 'better-sqlite3', 'jsonwebtoken'],
+  },
 }
 
 module.exports = nextConfig

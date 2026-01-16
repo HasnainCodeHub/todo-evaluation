@@ -25,7 +25,7 @@ export function middleware(request: NextRequest) {
     const regularToken = request.cookies.get('better-auth.session_token')
     
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/1c5511c5-14ca-4576-be09-337fb4d9d70c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'middleware.ts:22',message:'Cookie check - regular',data:{hasRegularToken:!!regularToken,allCookies:Object.keys(request.cookies.getAll()).length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/1c5511c5-14ca-4576-be09-337fb4d9d70c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'middleware.ts:22',message:'Cookie check - regular',data:{hasRegularToken:!!regularToken},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
     // #endregion
     
     const secureToken = request.cookies.get('__Secure-better-auth.session_token')
