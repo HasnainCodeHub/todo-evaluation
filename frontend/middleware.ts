@@ -2,19 +2,15 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // #region agent log - Absolute minimum
   const pathname = request.nextUrl.pathname
-  console.error('[MW]', pathname)
 
-  // Public routes
+  // Public routes that don't require authentication
   const isPublicPath = pathname === '/' || pathname === '/signin' || pathname === '/signup'
-  
-  // Session check
+
+  // Session check - handle both regular and secure cookie prefixes
   const regularToken = request.cookies.get('better-auth.session_token')
   const secureToken = request.cookies.get('__Secure-better-auth.session_token')
   const hasSession = !!(regularToken || secureToken)
-  
-  console.error('[MW]', isPublicPath, hasSession)
 
   // Redirect authenticated users away from auth pages
   if (hasSession && (pathname === '/signin' || pathname === '/signup')) {
@@ -29,7 +25,6 @@ export function middleware(request: NextRequest) {
     url.pathname = '/signin'
     return NextResponse.redirect(url)
   }
-  // #endregion
 
   return NextResponse.next()
 }

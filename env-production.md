@@ -7,15 +7,15 @@ This document lists all the environment variables you must set in the Vercel Das
 ---
 
 ## 🚀 Frontend Deployment
-**URL**: `https://todo-evaluation.vercel.app/`
+**URL**: `https://frontend-gamma-three-88.vercel.app/`
 
 | Variable Name | Value | Description |
 | :--- | :--- | :--- |
 | `DATABASE_URL` | `postgresql://...` | Your Neon PostgreSQL connection string (from Neon dashboard). |
 | `BETTER_AUTH_SECRET` | `your_secure_32_char_secret` | **CRITICAL**: Must match the backend's `JWT_SECRET`. |
-| `BETTER_AUTH_URL` | `https://todo-evaluation.vercel.app` | The URL of your frontend deployment. |
+| `BETTER_AUTH_URL` | `https://frontend-gamma-three-88.vercel.app` | The URL of your frontend deployment. |
 | `NEXT_PUBLIC_API_URL` | `https://evaluation-todo.vercel.app` | The URL of your backend deployment. |
-| `NEXT_PUBLIC_AUTH_URL` | `https://todo-evaluation.vercel.app` | Same as `BETTER_AUTH_URL` for client-side access. |
+| `NEXT_PUBLIC_AUTH_URL` | `https://frontend-gamma-three-88.vercel.app` | Same as `BETTER_AUTH_URL` for client-side access. |
 
 ---
 

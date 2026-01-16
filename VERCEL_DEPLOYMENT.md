@@ -5,7 +5,7 @@
 ```
 [Browser]
     ↓ (Better Auth Cookie)
-[Frontend: https://todo-evaluation.vercel.app]
+[Frontend: https://frontend-gamma-three-88.vercel.app]
     ↓ (Next.js API Route: /api/auth/jwt)
     ↓ (JWT Token Generation)
     ↓ (Authorization: Bearer <JWT>)
@@ -16,7 +16,7 @@
 
 ## Deployment URLs
 
-- **Frontend**: https://todo-evaluation.vercel.app/
+- **Frontend**: https://frontend-gamma-three-88.vercel.app/
 - **Backend**: https://evaluation-todo.vercel.app/
 
 ## Prerequisites
@@ -61,7 +61,7 @@ In the Vercel dashboard, go to **Settings** → **Environment Variables** and ad
 
 | Variable Name | Value | Note |
 |---------------|-------|------|
-| `BETTER_AUTH_URL` | `https://todo-evaluation.vercel.app` | Auto-detected from VERCEL_URL if not set |
+| `BETTER_AUTH_URL` | `https://frontend-gamma-three-88.vercel.app` | Auto-detected from VERCEL_URL if not set |
 
 **CRITICAL SECURITY NOTES:**
 - ✅ `BETTER_AUTH_SECRET` **MUST** match the `JWT_SECRET` in your backend
@@ -127,7 +127,7 @@ curl https://evaluation-todo.vercel.app/api/ping
 
 ### 2. Test Frontend
 
-1. Visit https://todo-evaluation.vercel.app/
+1. Visit https://frontend-gamma-three-88.vercel.app/
 2. Click "Sign Up"
 3. Create a new account
 4. Verify you're redirected to dashboard
@@ -191,7 +191,7 @@ curl https://evaluation-todo.vercel.app/api/ping
 
 ## Environment Variable Reference
 
-### Frontend (todo-evaluation.vercel.app)
+### Frontend (frontend-gamma-three-88.vercel.app)
 
 ```env
 # Required
@@ -201,7 +201,7 @@ NEXT_PUBLIC_API_URL=https://evaluation-todo.vercel.app
 
 # Auto-provided by Vercel
 VERCEL=1
-VERCEL_URL=todo-evaluation.vercel.app
+VERCEL_URL=frontend-gamma-three-88.vercel.app
 ```
 
 ### Backend (evaluation-todo.vercel.app)

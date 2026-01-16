@@ -22,7 +22,7 @@ if (!process.env.BETTER_AUTH_SECRET) {
 /* ------------------------------------------------------------------ */
 
 // 🔒 Single canonical frontend URL (production)
-const PROD_FRONTEND_URL = "https://todo-evaluation.vercel.app"
+const PROD_FRONTEND_URL = "https://frontend-gamma-three-88.vercel.app"
 
 // Local dev URL
 const DEV_FRONTEND_URL = "http://localhost:3000"

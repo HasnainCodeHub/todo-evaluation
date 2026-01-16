@@ -10,6 +10,7 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import jwt from 'jsonwebtoken'
 import { auth } from '@/lib/auth/auth-server'
 
@@ -30,8 +31,29 @@ import { auth } from '@/lib/auth/auth-server'
  */
 export async function GET(request: NextRequest) {
   try {
+    // Get cookies using Next.js cookies() API
+    const cookieStore = await cookies()
+    const allCookies = cookieStore.getAll()
+
+    // Check for Better Auth session cookies (both secure and non-secure variants)
+    const regularToken = cookieStore.get('better-auth.session_token')
+    const secureToken = cookieStore.get('__Secure-better-auth.session_token')
+    const sessionToken = regularToken || secureToken
+
+    if (!sessionToken) {
+      return NextResponse.json(
+        { error: 'No session token cookie' },
+        { status: 401 }
+      )
+    }
+
+    // Build headers with cookie for Better Auth
+    const cookieHeader = allCookies.map(c => `${c.name}=${c.value}`).join('; ')
+    const headers = new Headers()
+    headers.set('cookie', cookieHeader)
+
     // Get Better Auth session from cookies (server-side)
-    const session = await auth.api.getSession({ headers: request.headers })
+    const session = await auth.api.getSession({ headers })
 
     // Session validation
     if (!session?.user) {

@@ -35,9 +35,7 @@ const nextConfig = {
   reactStrictMode: true,
   // Exclude Node.js dependencies from server components bundling
   // Note: Middleware uses Edge runtime and bundles separately
-  experimental: {
-    serverComponentsExternalPackages: ['pg', 'better-sqlite3', 'jsonwebtoken'],
-  },
+  serverExternalPackages: ['pg', 'better-sqlite3', 'jsonwebtoken'],
   // Ensure middleware doesn't bundle Node.js code
   webpack: (config, { isServer, webpack }) => {
     if (!isServer) {
