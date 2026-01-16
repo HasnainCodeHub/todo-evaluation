@@ -5,13 +5,8 @@ export function middleware(request: NextRequest) {
   try {
     const { pathname } = request.nextUrl
 
-    // Redirect root to signin
-    if (pathname === '/') {
-      return NextResponse.redirect(new URL('/signin', request.url))
-    }
-
     // Public routes that don't require authentication
-    const publicPaths = ['/signin', '/signup']
+    const publicPaths = ['/', '/signin', '/signup']
     const isPublicPath = publicPaths.includes(pathname)
 
     // Get the session token from cookies
