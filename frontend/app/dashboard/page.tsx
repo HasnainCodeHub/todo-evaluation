@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useSession, signOut } from '@/lib/auth/auth-client'
 import { useTasks } from '@/hooks/useTasks'
@@ -9,15 +9,25 @@ import TaskList from '@/components/tasks/TaskList'
 import { TaskListSkeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 
-// Progress ring component
+// Animated Progress ring component with smooth transitions
 function ProgressRing({ progress, size = 120, strokeWidth = 10 }: { progress: number; size?: number; strokeWidth?: number }) {
+  const [animatedProgress, setAnimatedProgress] = useState(0)
   const radius = (size - strokeWidth) / 2
   const circumference = radius * 2 * Math.PI
-  const offset = circumference - (progress / 100) * circumference
+  const offset = circumference - (animatedProgress / 100) * circumference
+
+  useEffect(() => {
+    const timer = setTimeout(() => setAnimatedProgress(progress), 100)
+    return () => clearTimeout(timer)
+  }, [progress])
 
   return (
-    <div className="relative" style={{ width: size, height: size }}>
-      <svg className="transform -rotate-90" width={size} height={size}>
+    <div className="relative group" style={{ width: size, height: size }}>
+      {/* Glow effect on hover */}
+      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500" />
+
+      <svg className="transform -rotate-90 relative" width={size} height={size}>
+        {/* Background track */}
         <circle
           className="text-surface-100"
           strokeWidth={strokeWidth}
@@ -27,8 +37,9 @@ function ProgressRing({ progress, size = 120, strokeWidth = 10 }: { progress: nu
           cx={size / 2}
           cy={size / 2}
         />
+        {/* Progress arc */}
         <circle
-          className="transition-all duration-700 ease-out"
+          className="transition-all duration-1000 ease-out"
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
           strokeDashoffset={offset}
@@ -38,6 +49,9 @@ function ProgressRing({ progress, size = 120, strokeWidth = 10 }: { progress: nu
           r={radius}
           cx={size / 2}
           cy={size / 2}
+          style={{
+            filter: 'drop-shadow(0 0 6px rgba(139, 92, 246, 0.4))'
+          }}
         />
         <defs>
           <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -47,27 +61,58 @@ function ProgressRing({ progress, size = 120, strokeWidth = 10 }: { progress: nu
         </defs>
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-bold text-surface-900">{progress}%</span>
+        <span className="text-3xl font-bold text-surface-900 tabular-nums transition-all duration-500">
+          {animatedProgress}%
+        </span>
         <span className="text-xs text-surface-500 font-medium">Complete</span>
       </div>
     </div>
   )
 }
 
-// Stat card component
+// Animated Stat card component with micro-interactions
 function StatCard({
   icon,
   label,
   value,
   color = 'primary',
-  trend
+  index = 0
 }: {
   icon: React.ReactNode
   label: string
   value: number
   color?: 'primary' | 'success' | 'warning' | 'accent'
-  trend?: 'up' | 'down'
+  index?: number
 }) {
+  const [mounted, setMounted] = useState(false)
+  const [animatedValue, setAnimatedValue] = useState(0)
+
+  useEffect(() => {
+    const mountTimer = setTimeout(() => setMounted(true), index * 100)
+    return () => clearTimeout(mountTimer)
+  }, [index])
+
+  useEffect(() => {
+    if (!mounted) return
+
+    // Animate the counter
+    const duration = 1000
+    const startTime = performance.now()
+
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      const easeOut = 1 - Math.pow(1 - progress, 3)
+      setAnimatedValue(Math.floor(value * easeOut))
+
+      if (progress < 1) {
+        requestAnimationFrame(animate)
+      }
+    }
+
+    requestAnimationFrame(animate)
+  }, [value, mounted])
+
   const colorClasses = {
     primary: 'from-primary-500 to-primary-600 shadow-primary-500/25',
     success: 'from-success-500 to-success-600 shadow-success-500/25',
@@ -75,15 +120,32 @@ function StatCard({
     accent: 'from-accent-500 to-accent-600 shadow-accent-500/25',
   }
 
+  const glowColors = {
+    primary: 'group-hover:shadow-primary-500/20',
+    success: 'group-hover:shadow-success-500/20',
+    warning: 'group-hover:shadow-amber-500/20',
+    accent: 'group-hover:shadow-accent-500/20',
+  }
+
   return (
-    <div className="bg-white rounded-2xl p-5 border border-surface-100 shadow-card hover:shadow-card-hover transition-all duration-300">
+    <div
+      className={`group bg-white rounded-2xl p-5 border border-surface-100 shadow-card
+        hover:shadow-xl ${glowColors[color]} hover:-translate-y-1
+        transition-all duration-500 ease-out cursor-default
+        ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+      style={{ transitionDelay: `${index * 100}ms` }}
+    >
       <div className="flex items-center gap-4">
-        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colorClasses[color]} flex items-center justify-center shadow-lg`}>
+        <div className={`relative w-12 h-12 rounded-xl bg-gradient-to-br ${colorClasses[color]}
+          flex items-center justify-center shadow-lg
+          transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+          {/* Icon glow */}
+          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/20 to-transparent" />
           {icon}
         </div>
         <div>
           <p className="text-sm font-medium text-surface-500">{label}</p>
-          <p className="text-2xl font-bold text-surface-900">{value}</p>
+          <p className="text-2xl font-bold text-surface-900 tabular-nums">{animatedValue}</p>
         </div>
       </div>
     </div>
@@ -192,20 +254,28 @@ function DashboardContent() {
             label="Total Tasks"
             value={totalTasks}
             color="primary"
+            index={0}
           />
           <StatCard
             icon={<svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
             label="Pending"
             value={pendingTasks}
             color="warning"
+            index={1}
           />
           <StatCard
             icon={<svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
             label="Completed"
             value={completedTasks}
             color="success"
+            index={2}
           />
-          <div className="bg-white rounded-2xl p-5 border border-surface-100 shadow-card hover:shadow-card-hover transition-all duration-300 flex items-center justify-center">
+          <div className={`group bg-white rounded-2xl p-5 border border-surface-100 shadow-card
+            hover:shadow-xl hover:-translate-y-1 transition-all duration-500 ease-out
+            flex items-center justify-center
+            ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+            style={{ transitionDelay: '300ms' }}
+          >
             <ProgressRing progress={completionRate} size={100} strokeWidth={8} />
           </div>
         </div>
