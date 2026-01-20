@@ -37,7 +37,16 @@ const nextConfig = {
   // Note: Middleware uses Edge runtime and bundles separately
   serverExternalPackages: ['pg', 'better-sqlite3', 'jsonwebtoken'],
   // Ensure middleware doesn't bundle Node.js code
-  webpack: (config, { isServer, webpack }) => {
+  webpack: (config, { isServer, webpack, dev }) => {
+    // Windows file watching fix - enable polling for dev mode
+    if (dev) {
+      config.watchOptions = {
+        poll: 1000, // Check for changes every second
+        aggregateTimeout: 300, // Delay before rebuilding
+        ignored: /node_modules/,
+      }
+    }
+
     if (!isServer) {
       return config
     }
