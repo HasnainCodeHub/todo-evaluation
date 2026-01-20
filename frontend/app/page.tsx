@@ -121,16 +121,14 @@ function FeatureCard({
 }
 
 // Tech stack item with hover animation
-function TechItem({ name, icon, description }: { name: string; icon: string; description: string }) {
+function TechItem({ name, icon, category }: { name: string; icon: string; category: string }) {
   return (
-    <div className="group flex flex-col items-center p-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-surface-100/80 shadow-lg
-      hover:shadow-xl hover:border-primary-200 hover:-translate-y-2 transition-all duration-500">
-      <div className="relative mb-4">
-        <div className="text-5xl group-hover:scale-125 transition-transform duration-500">{icon}</div>
-        <div className="absolute inset-0 bg-primary-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+    <div className="group p-6 bg-surface-50 rounded-2xl border border-surface-100 hover:bg-white hover:border-primary-200 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 text-center">
+      <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+        {icon}
       </div>
-      <p className="font-bold text-surface-900 mb-1">{name}</p>
-      <p className="text-sm text-surface-500 text-center">{description}</p>
+      <div className="font-semibold text-surface-900 mb-1">{name}</div>
+      <div className="text-xs text-surface-500">{category}</div>
     </div>
   )
 }
@@ -242,15 +240,17 @@ const features = [
 ]
 
 const techStack = [
-  { name: 'Next.js 15', icon: '▲', description: 'React Framework' },
-  { name: 'FastAPI', icon: '⚡', description: 'Python Backend' },
-  { name: 'PostgreSQL', icon: '🐘', description: 'Neon Serverless' },
-  { name: 'Better Auth', icon: '🔐', description: 'Authentication' },
+  { name: 'Next.js 14', category: 'Frontend', icon: '▲' },
+  { name: 'FastAPI', category: 'Backend', icon: '⚡' },
+  { name: 'TypeScript', category: 'Language', icon: '📘' },
+  { name: 'PostgreSQL', category: 'Database', icon: '🐘' },
+  { name: 'Better Auth', category: 'Security', icon: '🔐' },
+  { name: 'Tailwind CSS', category: 'Styling', icon: '🎨' },
 ]
 
 const stats = [
   { value: 10000, suffix: '+', label: 'Tasks Completed' },
-  { value: 99.9, suffix: '%', label: 'Uptime SLA' },
+  { value: 99, suffix: '%', label: 'Uptime SLA' },
   { value: 50, suffix: 'ms', label: 'Avg Response' },
   { value: 5, suffix: '', label: 'Dev Phases' },
 ]
@@ -324,87 +324,62 @@ export default function HomePage() {
         </div>
 
         <div className="max-w-6xl mx-auto text-center relative z-10">
-          {/* Badge with glow */}
-          <div className={`inline-flex items-center gap-2 px-5 py-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-surface-100/80 mb-8
-            ${mounted ? 'animate-fade-in-down' : 'opacity-0'}`}>
-            <span className="relative flex h-2.5 w-2.5">
+          {/* Badge */}
+          <div className={`inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-100 to-accent-100 rounded-full mb-8 border border-primary-200/50 ${mounted ? 'animate-fade-in-down' : 'opacity-0'}`}>
+            <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-gradient-to-br from-primary-500 to-primary-600"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
             </span>
-            <span className="text-sm font-semibold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
-              Now in Phase II - Production Ready
+            <span className="text-sm font-semibold bg-gradient-to-r from-primary-700 to-accent-700 bg-clip-text text-transparent">
+              Phase 2.4 — Full Stack Todo Platform
             </span>
           </div>
 
-          {/* Main heading with gradient animation */}
-          <h1 className={`font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold mb-8 leading-[1.1] tracking-tight
-            ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}>
-            <span className="text-surface-900">Spec-Driven.</span>{' '}
-            <span className="gradient-text-aurora">
-              AI-Native.
-            </span>
+          {/* Main heading */}
+          <h1 className={`font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-surface-900 mb-6 leading-[1.1] tracking-tight ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}>
+            <span className="block">Spec-Driven.</span>
+            <span className="block gradient-text">AI-Native.</span>
+            <span className="block text-surface-700">Cloud-First.</span>
           </h1>
 
-          <p className={`text-xl md:text-2xl text-surface-600 mb-12 max-w-3xl mx-auto leading-relaxed text-balance
-            ${mounted ? 'animate-fade-in-up animation-delay-200' : 'opacity-0'}`}>
-            The evolution of task management. Built for developers who ship.
-            <span className="block mt-3 text-lg text-surface-500 font-medium">
-              Modern • Fast • Secure • Beautiful
-            </span>
+          {/* Subtitle */}
+          <p className={`text-xl md:text-2xl text-surface-600 mb-12 max-w-3xl mx-auto leading-relaxed ${mounted ? 'animate-fade-in-up animation-delay-200' : 'opacity-0'}`}>
+            The evolution of task management. Built with modern architecture,
+            powered by intelligent automation, designed for developers who ship.
           </p>
 
-          {/* CTA Buttons with enhanced styling */}
-          <div className={`flex flex-col sm:flex-row justify-center gap-4 mb-12
-            ${mounted ? 'animate-fade-in-up animation-delay-300' : 'opacity-0'}`}>
+          {/* CTA Buttons */}
+          <div className={`flex flex-col sm:flex-row gap-4 justify-center items-center mb-16 ${mounted ? 'animate-fade-in-up animation-delay-300' : 'opacity-0'}`}>
             <Link
-              href="/signin?mode=signup"
-              className="group relative px-10 py-5 rounded-2xl font-bold text-lg text-white overflow-hidden transition-all duration-300
-                shadow-xl shadow-primary-500/30 hover:shadow-2xl hover:shadow-primary-500/40 hover:scale-[1.02] active:scale-[0.98]"
+              href="/signin"
+              className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-primary-600 to-primary-500 rounded-2xl shadow-xl shadow-primary-500/30 hover:shadow-2xl hover:shadow-primary-500/40 hover:scale-[1.02] transition-all duration-300 w-full sm:w-auto overflow-hidden"
             >
-              {/* Gradient background */}
-              <span className="absolute inset-0 bg-gradient-to-r from-primary-600 via-primary-500 to-primary-600 bg-[length:200%_100%] animate-gradient-x" />
-              {/* Hover overlay */}
-              <span className="absolute inset-0 bg-gradient-to-r from-primary-500 to-accent-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              {/* Shine effect */}
-              <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-
-              <span className="relative flex items-center justify-center gap-3">
-                Get Started Free
-                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <span className="absolute inset-0 bg-gradient-to-r from-primary-500 to-accent-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <span className="relative flex items-center gap-2">
+                Start Building Free
+                <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
               </span>
             </Link>
-
             <Link
-              href="#features"
-              className="group relative px-10 py-5 bg-white/90 backdrop-blur-sm text-surface-700 border-2 border-surface-200/80 rounded-2xl font-bold text-lg
-                shadow-lg hover:border-primary-300 hover:bg-white hover:text-primary-700 hover:shadow-xl transition-all duration-300 active:scale-[0.98]"
+              href="/#how-it-works"
+              className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-surface-700 bg-white border-2 border-surface-200 rounded-2xl hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700 transition-all duration-300 w-full sm:w-auto"
             >
-              <span className="flex items-center justify-center gap-2">
-                Learn More
-                <svg className="w-5 h-5 group-hover:translate-y-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                </svg>
-              </span>
+              See How It Works
             </Link>
           </div>
 
-          {/* Trust badges with icons */}
-          <div className={`flex flex-wrap justify-center items-center gap-8 ${mounted ? 'animate-fade-in-up animation-delay-500' : 'opacity-0'}`}>
-            {[
-              { text: 'No credit card required', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
-              { text: 'Free forever plan', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
-              { text: 'Setup in 30 seconds', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
-            ].map((badge, i) => (
-              <div key={i} className="flex items-center gap-2 text-surface-500 hover:text-surface-700 transition-colors">
-                <div className="w-6 h-6 rounded-full bg-success-100 flex items-center justify-center">
-                  <svg className="w-4 h-4 text-success-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={badge.icon} />
-                  </svg>
-                </div>
-                <span className="text-sm font-medium">{badge.text}</span>
-              </div>
+          {/* Tech stack badges */}
+          <div className={`flex flex-wrap gap-3 justify-center ${mounted ? 'animate-fade-in-up animation-delay-500' : 'opacity-0'}`}>
+            {techStack.slice(0, 4).map((tech) => (
+              <span
+                key={tech.name}
+                className="group px-4 py-2.5 bg-white/90 backdrop-blur-sm rounded-xl text-sm font-medium text-surface-700 shadow-card border border-surface-100 hover:shadow-card-hover hover:border-primary-200 hover:-translate-y-0.5 transition-all duration-300 cursor-default"
+              >
+                <span className="mr-2">{tech.icon}</span>
+                {tech.name}
+              </span>
             ))}
           </div>
         </div>
@@ -470,17 +445,17 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
             {stats.map((s, index) => (
               <div
                 key={s.label}
-                className="relative p-8 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10
-                  hover:bg-white/15 hover:border-white/20 transition-all duration-500 group"
+                className="relative p-4 md:p-8 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10
+                  hover:bg-white/15 hover:border-white/20 transition-all duration-500 group overflow-hidden"
               >
-                <div className="text-5xl md:text-6xl font-bold text-white mb-3 group-hover:scale-105 transition-transform duration-300">
+                <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2 md:mb-3 group-hover:scale-105 transition-transform duration-300 tabular-nums">
                   {mounted && <AnimatedCounter end={s.value} suffix={s.suffix} />}
                 </div>
-                <p className="text-white/70 font-medium text-lg">{s.label}</p>
+                <p className="text-white/70 font-medium text-sm md:text-lg">{s.label}</p>
 
                 {/* Decorative accent */}
                 <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-accent-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-l-2xl" />
@@ -585,7 +560,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {techStack.map((tech) => (
               <TechItem key={tech.name} {...tech} />
             ))}
@@ -619,54 +594,48 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA SECTION */}
-      <section className="py-32 relative overflow-hidden">
-        {/* Dark gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-surface-900 via-surface-800 to-surface-900" />
+      {/* CTA Section */}
+      <section className="relative py-24 lg:py-32 px-4 bg-surface-50">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="relative p-12 md:p-16 bg-gradient-to-br from-primary-600 via-primary-700 to-accent-700 rounded-3xl overflow-hidden shadow-2xl">
+            {/* Background decoration */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute inset-0" style={{
+                backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+                backgroundSize: '32px 32px'
+              }} />
+            </div>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 
-        {/* Animated gradient orb */}
-        <div className="absolute inset-0">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-br from-primary-500/20 via-accent-500/10 to-pink-500/10 rounded-full blur-3xl animate-aurora" />
-        </div>
+            <div className="relative z-10">
+              <h2 className="font-display text-3xl md:text-5xl font-bold text-white mb-6">
+                Ready to evolve your{' '}
+                <span className="text-accent-300">productivity</span>?
+              </h2>
+              <p className="text-lg text-white/80 mb-10 max-w-xl mx-auto">
+                Join the evolution. Start managing your tasks with a platform
+                designed for the future.
+              </p>
 
-        <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-8">
-            Ready to evolve your{' '}
-            <span className="bg-gradient-to-r from-primary-400 via-accent-400 to-primary-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient-x">
-              workflow?
-            </span>
-          </h2>
-          <p className="text-xl text-surface-300 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Join developers who have transformed their productivity with Evolution of Todo.
-            Start free today.
-          </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  href="/signin"
+                  className="group inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-primary-700 bg-white rounded-2xl shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300"
+                >
+                  <span className="flex items-center gap-2">
+                    Get Started Free
+                    <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </span>
+                </Link>
+              </div>
 
-          <Link
-            href="/signin?mode=signup"
-            className="group inline-flex items-center gap-3 px-12 py-6 bg-white text-surface-900 rounded-2xl font-bold text-xl
-              shadow-2xl hover:shadow-[0_20px_60px_-15px_rgba(255,255,255,0.3)] hover:scale-[1.02] transition-all duration-300 active:scale-[0.98]"
-          >
-            Start Free Today
-            <svg className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </Link>
-
-          <p className="mt-8 text-surface-400 text-sm flex items-center justify-center gap-4">
-            <span className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-              No credit card required
-            </span>
-            <span className="w-1 h-1 bg-surface-600 rounded-full" />
-            <span className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-              Free forever plan
-            </span>
-          </p>
+              <p className="mt-6 text-sm text-white/60">
+                No credit card required
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 

@@ -19,7 +19,7 @@ The server will be available at `http://localhost:8000`.
 ### Example with custom port
 
 ```bash
-uvicorn backend.app.main:app --reload --port 8000
+uv run uvicorn backend.app.main:app --reload --port 8000
 ```
 
 ## Frontend

@@ -39,17 +39,17 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             disabled={disabled}
             className={`
-              w-full px-4 py-3
+              w-full px-4 py-3.5
               ${leftIcon ? 'pl-11' : ''}
               ${rightIcon ? 'pr-11' : ''}
-              bg-white border-2 rounded-xl
+              bg-white/90 backdrop-blur-sm border border-surface-200/70 rounded-xl
               text-surface-900 placeholder-surface-400
               transition-all duration-300 ease-out
-              focus:outline-none focus:ring-4
+              focus:outline-none focus:ring-4 focus:ring-blue-500/10
               disabled:bg-surface-50 disabled:text-surface-500 disabled:cursor-not-allowed
               ${error
                 ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10'
-                : 'border-surface-200 hover:border-surface-300 focus:border-primary-500 focus:ring-primary-500/10'
+                : 'hover:border-blue-200/80 focus:border-blue-500'
               }
               ${className}
             `}

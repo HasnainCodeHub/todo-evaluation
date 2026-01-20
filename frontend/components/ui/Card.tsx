@@ -3,7 +3,7 @@
 import { ReactNode } from 'react'
 
 interface CardProps {
-  variant?: 'default' | 'gradient' | 'glass' | 'outlined'
+  variant?: 'default' | 'gradient' | 'glass' | 'outlined' | 'elevated'
   hover?: boolean
   padding?: 'none' | 'sm' | 'md' | 'lg'
   children: ReactNode
@@ -11,8 +11,8 @@ interface CardProps {
 }
 
 export function Card({
-  variant = 'default',
-  hover = false,
+  variant = 'glass',
+  hover = true,
   padding = 'md',
   children,
   className = '',
@@ -30,14 +30,15 @@ export function Card({
   }
 
   const variantStyles = {
-    default: 'bg-white border border-surface-100 shadow-card',
-    gradient: 'bg-gradient-to-br from-white to-surface-50 border border-surface-100 shadow-card',
-    glass: 'bg-white/70 backdrop-blur-lg border border-white/20 shadow-card',
+    default: 'bg-white border border-surface-100/60 shadow-lg',
+    gradient: 'bg-gradient-to-br from-white to-surface-50 border border-surface-100/60 shadow-lg',
+    glass: 'bg-white/95 backdrop-blur-xl border border-surface-100/60 shadow-lg',
     outlined: 'bg-transparent border-2 border-surface-200',
+    elevated: 'bg-white/95 backdrop-blur-xl border border-surface-100/50 shadow-xl',
   }
 
   const hoverStyles = hover
-    ? 'hover:shadow-card-hover hover:-translate-y-1 hover:border-primary-200 cursor-pointer'
+    ? 'hover:shadow-2xl hover:-translate-y-1 hover:border-blue-200/70 cursor-pointer'
     : ''
 
   return (
@@ -60,13 +61,13 @@ export function CardHeader({ title, subtitle, icon, action, className = '' }: Ca
     <div className={`flex items-start justify-between gap-4 ${className}`}>
       <div className="flex items-start gap-3">
         {icon && (
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white shadow-glow flex-shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg flex-shrink-0">
             {icon}
           </div>
         )}
         <div>
-          <h3 className="font-display text-lg font-semibold text-surface-900">{title}</h3>
-          {subtitle && <p className="text-sm text-surface-500 mt-0.5">{subtitle}</p>}
+          <h3 className="font-display text-xl font-semibold text-surface-900">{title}</h3>
+          {subtitle && <p className="text-sm text-surface-500 mt-1">{subtitle}</p>}
         </div>
       </div>
       {action && <div className="flex-shrink-0">{action}</div>}

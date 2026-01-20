@@ -3,7 +3,7 @@
 import { ButtonHTMLAttributes, forwardRef, ReactNode } from 'react'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'success'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'success' | 'dark' | 'light'
   size?: 'sm' | 'md' | 'lg'
   disabled?: boolean
   isLoading?: boolean
@@ -30,47 +30,56 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       rounded-xl transition-all duration-300 ease-out
       focus:outline-none focus:ring-2 focus:ring-offset-2
       disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
-      active:scale-[0.98]
+      active:scale-[0.98] shadow-sm
     `
 
     const sizeStyles = {
-      sm: 'px-3 py-1.5 text-sm gap-1.5',
-      md: 'px-4 py-2.5 text-sm gap-2',
-      lg: 'px-6 py-3 text-base gap-2.5',
+      sm: 'px-4 py-2 text-sm gap-1.5',
+      md: 'px-5 py-2.5 text-sm gap-2',
+      lg: 'px-7 py-3.5 text-base gap-2.5',
     }
 
     const variantStyles = {
       primary: `
-        bg-gradient-to-r from-primary-600 to-primary-500 text-white
-        shadow-lg shadow-primary-500/25
-        hover:shadow-xl hover:shadow-primary-500/30 hover:scale-[1.02]
-        focus:ring-primary-500
+        bg-gradient-to-r from-blue-600 to-indigo-600 text-white
+        shadow-lg shadow-blue-500/25
+        hover:shadow-xl hover:shadow-blue-500/30 hover:scale-[1.02]
+        focus:ring-blue-500 focus:ring-offset-white
         before:absolute before:inset-0 before:rounded-xl
-        before:bg-gradient-to-r before:from-primary-500 before:to-accent-500
+        before:bg-gradient-to-r before:from-blue-500 before:to-indigo-600
         before:opacity-0 before:transition-opacity before:duration-300
         hover:before:opacity-100
       `,
       secondary: `
-        bg-primary-50 text-primary-700 border-2 border-primary-200
-        hover:bg-primary-100 hover:border-primary-300 hover:shadow-md
-        focus:ring-primary-500
+        bg-white/90 backdrop-blur-sm text-surface-700 border border-surface-200/70
+        hover:bg-white hover:border-blue-200 hover:text-blue-700 hover:shadow-md
+        focus:ring-blue-500 focus:ring-offset-white
       `,
       ghost: `
-        bg-transparent text-surface-600
-        hover:bg-surface-100 hover:text-surface-900
-        focus:ring-surface-500
+        bg-transparent text-surface-600 hover:bg-surface-50 hover:text-surface-900
+        focus:ring-surface-500 focus:ring-offset-white
       `,
       danger: `
         bg-gradient-to-r from-red-600 to-red-500 text-white
         shadow-lg shadow-red-500/25
         hover:shadow-xl hover:shadow-red-500/30 hover:scale-[1.02]
-        focus:ring-red-500
+        focus:ring-red-500 focus:ring-offset-white
       `,
       success: `
-        bg-gradient-to-r from-success-600 to-success-500 text-white
-        shadow-lg shadow-success-500/25
-        hover:shadow-xl hover:shadow-success-500/30 hover:scale-[1.02]
-        focus:ring-success-500
+        bg-gradient-to-r from-emerald-600 to-emerald-500 text-white
+        shadow-lg shadow-emerald-500/25
+        hover:shadow-xl hover:shadow-emerald-500/30 hover:scale-[1.02]
+        focus:ring-emerald-500 focus:ring-offset-white
+      `,
+      dark: `
+        bg-surface-900 text-white
+        hover:bg-surface-800 hover:shadow-lg
+        focus:ring-surface-500 focus:ring-offset-white
+      `,
+      light: `
+        bg-white text-surface-700 border border-surface-200
+        hover:bg-surface-50 hover:shadow-md
+        focus:ring-surface-500 focus:ring-offset-white
       `,
     }
 
