@@ -2,10 +2,8 @@
 
 import Link from 'next/link'
 import { useEffect, useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
 import { Navbar } from '../components/ui/Navbar'
 import { Footer } from '../components/ui/Footer'
-import { useSession } from '@/lib/auth/auth-client'
 
 // Animated counter component with easing
 function AnimatedCounter({
@@ -276,8 +274,6 @@ const testimonials = [
 /* ---------------- PAGE ---------------- */
 
 export default function HomePage() {
-  const router = useRouter()
-  const { data: session, isPending } = useSession()
   const [mounted, setMounted] = useState(false)
   const [scrollY, setScrollY] = useState(0)
 
@@ -288,12 +284,6 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Redirect authenticated users
-  useEffect(() => {
-    if (!isPending && session?.user) {
-      router.replace('/dashboard')
-    }
-  }, [isPending, session, router])
 
   return (
     <main className="min-h-screen bg-surface-50 overflow-hidden">
