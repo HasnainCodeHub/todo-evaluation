@@ -5,7 +5,7 @@
 ```
 [Browser]
     ↓ (Better Auth Cookie)
-[Frontend: https://frontend-gamma-three-88.vercel.app]
+[Frontend: https://ai-based-todo.vercel.app]
     ↓ (Next.js API Route: /api/auth/jwt)
     ↓ (JWT Token Generation)
     ↓ (Authorization: Bearer <JWT>)
@@ -16,7 +16,7 @@
 
 ## Deployment URLs
 
-- **Frontend**: https://frontend-gamma-three-88.vercel.app/
+- **Frontend**: https://ai-based-todo.vercel.app/
 - **Backend**: https://evaluation-todo.vercel.app/
 
 ## Prerequisites
@@ -61,7 +61,7 @@ In the Vercel dashboard, go to **Settings** → **Environment Variables** and ad
 
 | Variable Name | Value | Note |
 |---------------|-------|------|
-| `BETTER_AUTH_URL` | `https://frontend-gamma-three-88.vercel.app` | Auto-detected from VERCEL_URL if not set |
+| `BETTER_AUTH_URL` | `https://ai-based-todo.vercel.app` | Auto-detected from VERCEL_URL if not set |
 
 **CRITICAL SECURITY NOTES:**
 - ✅ `BETTER_AUTH_SECRET` **MUST** match the `JWT_SECRET` in your backend
@@ -127,7 +127,7 @@ curl https://evaluation-todo.vercel.app/api/ping
 
 ### 2. Test Frontend
 
-1. Visit https://frontend-gamma-three-88.vercel.app/
+1. Visit https://ai-based-todo.vercel.app/
 2. Click "Sign Up"
 3. Create a new account
 4. Verify you're redirected to dashboard

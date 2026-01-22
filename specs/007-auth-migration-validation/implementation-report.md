@@ -171,8 +171,7 @@ Backend CORS (main.py:26-37):
 ```python
 allow_origins=[
     "http://localhost:3000",
-    "https://frontend-gamma-three-88.vercel.app",
-    "https://todo-evaluation.vercel.app",
+    "https://ai-based-todo.vercel.app",
 ],
 allow_credentials=True,
 allow_headers=["*"],

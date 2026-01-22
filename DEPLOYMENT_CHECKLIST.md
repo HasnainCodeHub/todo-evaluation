@@ -87,7 +87,7 @@ curl https://evaluation-todo.vercel.app/api/ping
 
 ### Test 2: Frontend Loads ✅
 
-Visit: https://frontend-gamma-three-88.vercel.app/
+Visit: https://ai-based-todo.vercel.app/
 
 **Expected**:
 - Landing page loads
@@ -153,7 +153,7 @@ Visit: https://frontend-gamma-three-88.vercel.app/
 ### Test 8: Protected Routes ✅
 
 1. Sign out
-2. Try to access: https://frontend-gamma-three-88.vercel.app/dashboard
+2. Try to access: https://ai-based-todo.vercel.app/dashboard
 
 **Expected**:
 - Redirect to `/signin`
@@ -172,7 +172,7 @@ vercel env ls
 ### View Deployment Logs
 
 ```bash
-vercel logs https://frontend-gamma-three-88.vercel.app/
+vercel logs https://ai-based-todo.vercel.app/
 ```
 
 ### Test Local Production Build
@@ -209,7 +209,7 @@ vercel env ls | grep BETTER_AUTH_SECRET
 
 **Fix**:
 1. Check backend `main.py` line 32
-2. Ensure `https://frontend-gamma-three-88.vercel.app` is in `allow_origins`
+2. Ensure `https://ai-based-todo.vercel.app` is in `allow_origins`
 3. Redeploy backend
 
 ### ❌ Issue: "[AuthGuard] BetterAuth error: {}"
@@ -236,10 +236,10 @@ vercel env ls | grep BETTER_AUTH_SECRET
 
 | Service | URL | Purpose |
 |---------|-----|---------|
-| Frontend | https://frontend-gamma-three-88.vercel.app/ | User interface |
+| Frontend | https://ai-based-todo.vercel.app/ | User interface |
 | Backend | https://evaluation-todo.vercel.app/ | REST API |
-| JWT Bridge | https://frontend-gamma-three-88.vercel.app/api/auth/jwt | Session → JWT |
-| Better Auth | https://frontend-gamma-three-88.vercel.app/api/auth/* | Authentication |
+| JWT Bridge | https://ai-based-todo.vercel.app/api/auth/jwt | Session → JWT |
+| Better Auth | https://ai-based-todo.vercel.app/api/auth/* | Authentication |
 
 ---
 
@@ -253,7 +253,7 @@ vercel env ls | grep BETTER_AUTH_SECRET
                   │ 1. Visit app
                   ▼
 ┌─────────────────────────────────────────────────────────┐
-│  Frontend: https://frontend-gamma-three-88.vercel.app/          │
+│  Frontend: https://ai-based-todo.vercel.app/          │
 │  - Better Auth (session cookies)                        │
 │  - AuthGuard (route protection)                         │
 │  - React components                                     │
