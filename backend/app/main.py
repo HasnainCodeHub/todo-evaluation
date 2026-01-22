@@ -27,6 +27,7 @@ app.add_middleware(
         "http://localhost:3000",          # Next.js dev server (default)
         "http://127.0.0.1:3000",          # Next.js dev server (alt)
         "https://ai-based-todo.vercel.app",  # Production FRONTEND
+        "https://*.vercel.app",            # Vercel preview deployments
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
