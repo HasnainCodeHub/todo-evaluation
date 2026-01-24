@@ -1,210 +1,409 @@
-# Claude Code Rules
+# AI-Based Todo Application
 
-This file is generated during init for the selected agent.
+Full-stack AI-powered task management application where AI commands handle all todo operations including creating, deleting, and updating tasks with complete authentication.
 
-You are an expert AI assistant specializing in Spec-Driven Development (SDD). Your primary goal is to work with the architext to build products.
+## Project Overview
 
-## Task context
+**Evolution of Todo** is a production-grade full-stack application demonstrating:
 
-**Your Surface:** You operate on a project level, providing guidance to users and executing development tasks via a defined set of tools.
+- **AI-Driven Task Management**: All todos managed via AI commands through OpenAI Agents SDK
+- **Complete Authentication**: Better Auth + JWT flow for secure user sessions
+- **User-Scoped Data**: Each user sees only their own tasks
+- **MCP Integration**: Model Context Protocol for tool execution and AI interactions
+- **Spec-Driven Development**: Rigorous SDD workflow with specs, PHRs, and ADRs
 
-**Your Success is Measured By:**
-- All outputs strictly follow the user intent.
-- Prompt History Records (PHRs) are created automatically and accurately for every user prompt.
-- Architectural Decision Record (ADR) suggestions are made intelligently for significant decisions.
-- All changes are small, testable, and reference code precisely.
+**Live Deployments**:
+- Frontend: `https://ai-based-todo.vercel.app`
+- Backend: `https://todo-backend-xi-eosin.vercel.app`
 
-## Core Guarantees (Product Promise)
+## Technology Stack
 
-- Record every user input verbatim in a Prompt History Record (PHR) after every user message. Do not truncate; preserve full multiline input.
-- PHR routing (all under `history/prompts/`):
-  - Constitution → `history/prompts/constitution/`
-  - Feature-specific → `history/prompts/<feature-name>/`
-  - General → `history/prompts/general/`
-- ADR suggestions: when an architecturally significant decision is detected, suggest: "📋 Architectural decision detected: <brief>. Document? Run `/sp.adr <title>`." Never auto‑create ADRs; require user consent.
+### Frontend
+| Technology | Purpose |
+|------------|---------|
+| **Next.js 15** | App Router, Server/Client Components |
+| **TypeScript** | Type-safe frontend development |
+| **Tailwind CSS** | Utility-first styling |
+| **Better Auth** | Session management, authentication UI |
+| **ChatKit** | AI chat interface components |
+| **Jose/JWT** | Token handling for API bridge |
 
-## Development Guidelines
+### Backend
+| Technology | Purpose |
+|------------|---------|
+| **FastAPI** | High-performance Python REST API |
+| **Python 3.13+** | Backend language |
+| **SQLModel** | ORM with Pydantic validation |
+| **PyJWT** | JWT token verification |
+| **OpenAI Agents SDK** | AI agent orchestration |
 
-### 1. Authoritative Source Mandate:
-Agents MUST prioritize and use MCP tools and CLI commands for all information gathering and task execution. NEVER assume a solution from internal knowledge; all methods require external verification.
+### Database & Infrastructure
+| Technology | Purpose |
+|------------|---------|
+| **Neon PostgreSQL** | Serverless SQL database |
+| **Kysely** | Type-safe SQL query builder (frontend) |
+| **Vercel** | Deployment platform (both apps) |
 
-### 2. Execution Flow:
-Treat MCP servers as first-class tools for discovery, verification, execution, and state capture. PREFER CLI interactions (running commands and capturing outputs) over manual file creation or reliance on internal knowledge.
+### Authentication Flow
+| Component | Role |
+|-----------|------|
+| **Better Auth** | Frontend session management |
+| **JWT Bridge** | `/api/auth/jwt` converts session to JWT |
+| **PyJWT** | Backend token verification |
+| **MCP** | Model Context Protocol for AI tool calls |
 
-### 3. Knowledge capture (PHR) for Every User Input.
-After completing requests, you **MUST** create a PHR (Prompt History Record).
+### Future/Planned
+| Technology | Purpose |
+|------------|---------|
+| **Dapr** | Distributed application runtime |
+| **Kubernetes** | Container orchestration |
+| **Docker** | Containerization |
 
-**When to create PHRs:**
-- Implementation work (code changes, new features)
-- Planning/architecture discussions
-- Debugging sessions
-- Spec/task/plan creation
-- Multi-step workflows
+## Directory Structure
 
-**PHR Creation Process:**
+```
+todo-evaluation/
+├── frontend/                      # Next.js 15 Application
+│   ├── app/                       # App Router pages
+│   │   ├── api/                   # API routes
+│   │   │   └── auth/              # Auth endpoints
+│   │   │       ├── [...all]/      # Better Auth catch-all
+│   │   │       └── jwt/           # JWT bridge route
+│   │   ├── (public)/              # Public pages (signin, home)
+│   │   └── dashboard/             # Protected dashboard
+│   ├── components/                # React components
+│   │   ├── ui/                    # Base UI (Button, Card, Badge)
+│   │   ├── tasks/                 # Task-specific components
+│   │   └── auth/                  # Auth components
+│   ├── hooks/                     # Custom hooks (useTasks)
+│   ├── lib/                       # Utilities
+│   │   ├── api/                   # API client (Bridge Pattern)
+│   │   ├── auth/                  # Better Auth client
+│   │   └── config.ts              # Environment config
+│   ├── types/                     # TypeScript definitions
+│   ├── middleware.ts              # Route protection
+│   └── auth.ts                    # Better Auth server config
+│
+├── backend/                       # FastAPI Application
+│   ├── app/
+│   │   ├── main.py                # FastAPI entry point
+│   │   ├── config.py              # Settings & environment
+│   │   ├── database.py            # SQLModel engine
+│   │   ├── models/                # SQLModel entities
+│   │   │   └── task.py            # Task model
+│   │   ├── routers/               # API endpoints
+│   │   │   └── tasks.py           # Task CRUD routes
+│   │   ├── schemas/               # Pydantic schemas
+│   │   │   └── task.py            # Request/Response models
+│   │   ├── crud/                  # Database operations
+│   │   │   └── task.py            # Task CRUD functions
+│   │   └── dependencies/          # FastAPI dependencies
+│   │       └── auth.py            # JWT verification
+│   ├── tests/                     # Pytest test files
+│   └── requirements.txt           # Python dependencies
+│
+├── src/                           # CLI Application (Phase 1)
+│   ├── cli.py                     # Click CLI commands
+│   ├── main.py                    # CLI entry point
+│   ├── task_model.py              # Task dataclass
+│   └── task_store.py              # In-memory storage
+│
+├── .claude/                       # Claude Code Configuration
+│   ├── agents/                    # 11 specialized agents
+│   │   ├── chat-orchestrator.md   # MCP tool orchestration
+│   │   ├── backend-api-architect.md
+│   │   ├── frontend-app-architect.md
+│   │   └── ...
+│   ├── skills/                    # 22 domain skills
+│   │   ├── mcp-tool-execution/    # MCP integration
+│   │   ├── jwt-authentication/    # Auth patterns
+│   │   ├── fastapi-architecture/  # Backend patterns
+│   │   ├── nextjs-app-router/     # Frontend patterns
+│   │   └── ...
+│   └── commands/                  # Spec-Kit commands
+│
+├── specs/                         # Feature Specifications
+│   ├── 001-cli-task-crud/         # CLI CRUD spec
+│   ├── 002-repo-governance/       # Governance spec
+│   ├── 003-db-persistence-layer/  # Database spec
+│   ├── 004-backend-rest-api/      # API spec
+│   ├── 005-auth-integration/      # Auth spec
+│   └── 006-frontend-integration/  # Frontend spec
+│
+├── history/                       # Development History
+│   ├── prompts/                   # Prompt History Records
+│   └── adr/                       # Architecture Decisions
+│
+└── .specify/                      # Spec-Kit Plus Config
+    ├── memory/                    # Constitution
+    └── templates/                 # PHR/ADR templates
+```
 
-1) Detect stage
-   - One of: constitution | spec | plan | tasks | red | green | refactor | explainer | misc | general
+## Coding Conventions
 
-2) Generate title
-   - 3–7 words; create a slug for the filename.
+### Python (Backend)
 
-2a) Resolve route (all under history/prompts/)
-  - `constitution` → `history/prompts/constitution/`
-  - Feature stages (spec, plan, tasks, red, green, refactor, explainer, misc) → `history/prompts/<feature-name>/` (requires feature context)
-  - `general` → `history/prompts/general/`
+```python
+# Type hints required on ALL functions
+async def create_task(
+    title: str,
+    description: str | None,
+    user_id: str
+) -> Task:
+    """Docstring required for public functions."""
+    pass
 
-3) Prefer agent‑native flow (no shell)
-   - Read the PHR template from one of:
-     - `.specify/templates/phr-template.prompt.md`
-     - `templates/phr-template.prompt.md`
-   - Allocate an ID (increment; on collision, increment again).
-   - Compute output path based on stage:
-     - Constitution → `history/prompts/constitution/<ID>-<slug>.constitution.prompt.md`
-     - Feature → `history/prompts/<feature-name>/<ID>-<slug>.<stage>.prompt.md`
-     - General → `history/prompts/general/<ID>-<slug>.general.prompt.md`
-   - Fill ALL placeholders in YAML and body:
-     - ID, TITLE, STAGE, DATE_ISO (YYYY‑MM‑DD), SURFACE="agent"
-     - MODEL (best known), FEATURE (or "none"), BRANCH, USER
-     - COMMAND (current command), LABELS (["topic1","topic2",...])
-     - LINKS: SPEC/TICKET/ADR/PR (URLs or "null")
-     - FILES_YAML: list created/modified files (one per line, " - ")
-     - TESTS_YAML: list tests run/added (one per line, " - ")
-     - PROMPT_TEXT: full user input (verbatim, not truncated)
-     - RESPONSE_TEXT: key assistant output (concise but representative)
-     - Any OUTCOME/EVALUATION fields required by the template
-   - Write the completed file with agent file tools (WriteFile/Edit).
-   - Confirm absolute path in output.
+# Pydantic schemas for request/response validation
+class TaskCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=200)
+    description: str | None = None
 
-4) Use sp.phr command file if present
-   - If `.**/commands/sp.phr.*` exists, follow its structure.
-   - If it references shell but Shell is unavailable, still perform step 3 with agent‑native tools.
+# SQLModel for database entities
+class Task(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    title: str = Field(max_length=200)
+    user_id: str = Field(index=True)
 
-5) Shell fallback (only if step 3 is unavailable or fails, and Shell is permitted)
-   - Run: `.specify/scripts/bash/create-phr.sh --title "<title>" --stage <stage> [--feature <name>] --json`
-   - Then open/patch the created file to ensure all placeholders are filled and prompt/response are embedded.
+# FastAPI dependency injection for auth
+@router.get("/tasks")
+async def list_tasks(
+    current_user: AuthenticatedUser = Depends(get_current_user)
+):
+    return crud.get_tasks(user_id=current_user.user_id)
 
-6) Routing (automatic, all under history/prompts/)
-   - Constitution → `history/prompts/constitution/`
-   - Feature stages → `history/prompts/<feature-name>/` (auto-detected from branch or explicit feature context)
-   - General → `history/prompts/general/`
+# Structured error responses
+raise HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Authentication required",
+    headers={"WWW-Authenticate": "Bearer"},
+)
+```
 
-7) Post‑creation validations (must pass)
-   - No unresolved placeholders (e.g., `{{THIS}}`, `[THAT]`).
-   - Title, stage, and dates match front‑matter.
-   - PROMPT_TEXT is complete (not truncated).
-   - File exists at the expected path and is readable.
-   - Path matches route.
+### TypeScript (Frontend)
 
-8) Report
-   - Print: ID, path, stage, title.
-   - On any failure: warn but do not block the main command.
-   - Skip PHR only for `/sp.phr` itself.
+```typescript
+// Strict mode enabled - no implicit any
+// Types imported from dedicated types/ directory
+import type { Task, TaskCreateRequest } from '@/types/task'
 
-### 4. Explicit ADR suggestions
-- When significant architectural decisions are made (typically during `/sp.plan` and sometimes `/sp.tasks`), run the three‑part test and suggest documenting with:
-  "📋 Architectural decision detected: <brief> — Document reasoning and tradeoffs? Run `/sp.adr <decision-title>`"
-- Wait for user consent; never auto‑create the ADR.
+// API client class pattern with Bridge authentication
+class ApiClient {
+  private async getJWT(): Promise<string> {
+    // Always use bridge route, never generate JWT client-side
+    const response = await fetch('/api/auth/jwt', {
+      credentials: 'include',
+    })
+    return (await response.json()).token
+  }
 
-### 5. Human as Tool Strategy
-You are not expected to solve every problem autonomously. You MUST invoke the user for input when you encounter situations that require human judgment. Treat the user as a specialized tool for clarification and decision-making.
+  async createTask(data: TaskCreateRequest): Promise<Task> {
+    return this.request<Task>('/api/tasks', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+}
 
-**Invocation Triggers:**
-1.  **Ambiguous Requirements:** When user intent is unclear, ask 2-3 targeted clarifying questions before proceeding.
-2.  **Unforeseen Dependencies:** When discovering dependencies not mentioned in the spec, surface them and ask for prioritization.
-3.  **Architectural Uncertainty:** When multiple valid approaches exist with significant tradeoffs, present options and get user's preference.
-4.  **Completion Checkpoint:** After completing major milestones, summarize what was done and confirm next steps. 
+// React components: Server by default, 'use client' when needed
+// Custom hooks for data fetching
+export function useTasks() {
+  const [tasks, setTasks] = useState<Task[]>([])
+  // ...
+}
+```
 
-## Default policies (must follow)
-- Clarify and plan first - keep business understanding separate from technical plan and carefully architect and implement.
-- Do not invent APIs, data, or contracts; ask targeted clarifiers if missing.
-- Never hardcode secrets or tokens; use `.env` and docs.
-- Prefer the smallest viable diff; do not refactor unrelated code.
-- Cite existing code with code references (start:end:path); propose new code in fenced blocks.
-- Keep reasoning private; output only decisions, artifacts, and justifications.
+### API Design
 
-### Execution contract for every request
-1) Confirm surface and success criteria (one sentence).
-2) List constraints, invariants, non‑goals.
-3) Produce the artifact with acceptance checks inlined (checkboxes or tests where applicable).
-4) Add follow‑ups and risks (max 3 bullets).
-5) Create PHR in appropriate subdirectory under `history/prompts/` (constitution, feature-name, or general).
-6) If plan/tasks identified decisions that meet significance, surface ADR suggestion text as described above.
+```
+# RESTful endpoints at /api/tasks
+GET    /api/tasks           # List user's tasks
+POST   /api/tasks           # Create task
+GET    /api/tasks/{id}      # Get specific task
+PUT    /api/tasks/{id}      # Update task
+DELETE /api/tasks/{id}      # Delete task
+PATCH  /api/tasks/{id}/complete  # Toggle completion
 
-### Minimum acceptance criteria
-- Clear, testable acceptance criteria included
-- Explicit error paths and constraints stated
-- Smallest viable change; no unrelated edits
-- Code references to modified/inspected files where relevant
+# Authentication header
+Authorization: Bearer <jwt_token>
 
-## Architect Guidelines (for planning)
+# Error response format
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human readable message"
+  }
+}
+```
 
-Instructions: As an expert architect, generate a detailed architectural plan for [Project Name]. Address each of the following thoroughly.
+### File Naming
 
-1. Scope and Dependencies:
-   - In Scope: boundaries and key features.
-   - Out of Scope: explicitly excluded items.
-   - External Dependencies: systems/services/teams and ownership.
+- **Python**: `snake_case.py` (task_model.py, task_store.py)
+- **TypeScript**: `camelCase.ts` for utilities, `PascalCase.tsx` for components
+- **Components**: `PascalCase.tsx` (EditTaskForm.tsx, LoadingSpinner.tsx)
 
-2. Key Decisions and Rationale:
-   - Options Considered, Trade-offs, Rationale.
-   - Principles: measurable, reversible where possible, smallest viable change.
+## Key Commands
 
-3. Interfaces and API Contracts:
-   - Public APIs: Inputs, Outputs, Errors.
-   - Versioning Strategy.
-   - Idempotency, Timeouts, Retries.
-   - Error Taxonomy with status codes.
+### Frontend Development
 
-4. Non-Functional Requirements (NFRs) and Budgets:
-   - Performance: p95 latency, throughput, resource caps.
-   - Reliability: SLOs, error budgets, degradation strategy.
-   - Security: AuthN/AuthZ, data handling, secrets, auditing.
-   - Cost: unit economics.
+```bash
+cd frontend
 
-5. Data Management and Migration:
-   - Source of Truth, Schema Evolution, Migration and Rollback, Data Retention.
+# Install dependencies
+npm install
 
-6. Operational Readiness:
-   - Observability: logs, metrics, traces.
-   - Alerting: thresholds and on-call owners.
-   - Runbooks for common tasks.
-   - Deployment and Rollback strategies.
-   - Feature Flags and compatibility.
+# Development server (Turbopack)
+npm run dev
 
-7. Risk Analysis and Mitigation:
-   - Top 3 Risks, blast radius, kill switches/guardrails.
+# Development server (Webpack)
+npm run dev:webpack
 
-8. Evaluation and Validation:
-   - Definition of Done (tests, scans).
-   - Output Validation for format/requirements/safety.
+# Production build
+npm run build
 
-9. Architectural Decision Record (ADR):
-   - For each significant decision, create an ADR and link it.
+# Start production server
+npm start
 
-### Architecture Decision Records (ADR) - Intelligent Suggestion
+# Lint check
+npm run lint
+```
 
-After design/architecture work, test for ADR significance:
+### Backend Development
 
-- Impact: long-term consequences? (e.g., framework, data model, API, security, platform)
-- Alternatives: multiple viable options considered?
-- Scope: cross‑cutting and influences system design?
+```bash
+cd backend
 
-If ALL true, suggest:
-📋 Architectural decision detected: [brief-description]
-   Document reasoning and tradeoffs? Run `/sp.adr [decision-title]`
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate  # Linux/Mac
+.venv\Scripts\activate     # Windows
 
-Wait for consent; never auto-create ADRs. Group related decisions (stacks, authentication, deployment) into one ADR when appropriate.
+# Install dependencies
+pip install -r requirements.txt
 
-## Basic Project Structure
+# Run development server
+uvicorn app.main:app --reload --port 8000
 
-- `.specify/memory/constitution.md` — Project principles
-- `specs/<feature>/spec.md` — Feature requirements
-- `specs/<feature>/plan.md` — Architecture decisions
-- `specs/<feature>/tasks.md` — Testable tasks with cases
-- `history/prompts/` — Prompt History Records
-- `history/adr/` — Architecture Decision Records
-- `.specify/` — SpecKit Plus templates and scripts
+# Run tests
+pytest
 
-## Code Standards
-See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
+# Run with custom host/port
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+### CLI Application (Phase 1)
+
+```bash
+cd src
+
+# Run CLI
+python main.py
+
+# CLI commands
+python cli.py add "Task title"
+python cli.py list
+python cli.py complete <task_id>
+python cli.py delete <task_id>
+```
+
+### Environment Setup
+
+```bash
+# Frontend (.env.local)
+NEXT_PUBLIC_API_URL=http://localhost:8000
+BETTER_AUTH_SECRET=<secret>
+DATABASE_URL=<neon_connection_string>
+
+# Backend (.env)
+DATABASE_URL=<neon_connection_string>
+JWT_SECRET=<shared_secret>
+JWT_ALGORITHM=HS256
+```
+
+### Deployment (Vercel)
+
+```bash
+# Deploy frontend
+cd frontend && vercel --prod
+
+# Deploy backend
+cd backend && vercel --prod
+```
+
+## Important Notes
+
+### DO NOT Modify Skill/Agent Patterns
+
+The `.claude/skills/` and `.claude/agents/` directories contain carefully designed patterns that power AI-driven development. **DO NOT change the coding methods from which these skills and agents are built.**
+
+**Protected patterns include**:
+
+1. **MCP Tool Execution** (`.claude/skills/mcp-tool-execution/`)
+   - Tool registration and validation
+   - Deterministic execution flow
+   - Error handling patterns
+
+2. **Chat Orchestrator** (`.claude/agents/chat-orchestrator.md`)
+   - Intent interpretation
+   - Tool chaining logic
+   - Confirmation policies
+
+3. **Authentication Skills** (`.claude/skills/jwt-*/`, `.claude/skills/better-auth-*/`)
+   - JWT verification flow
+   - Better Auth integration
+   - Bridge pattern implementation
+
+4. **API Architecture** (`.claude/skills/fastapi-architecture/`, `.claude/skills/rest-api-design/`)
+   - Router organization
+   - Dependency injection patterns
+   - Error response formats
+
+### Critical Architecture Rules
+
+1. **Never bypass the JWT Bridge**
+   - Frontend must always call `/api/auth/jwt` to get tokens
+   - Never generate JWT client-side
+   - Never pass user_id in headers manually
+
+2. **User-scoped data is mandatory**
+   - All CRUD operations MUST include `user_id` filtering
+   - Never allow cross-user data access
+
+3. **Follow existing patterns**
+   - New endpoints follow the existing router pattern
+   - New components follow the existing hook pattern
+   - New schemas follow the existing Pydantic pattern
+
+4. **Spec-Driven Development**
+   - Read specs before implementing features
+   - Create PHRs after completing work
+   - Suggest ADRs for significant decisions
+
+### Authentication Flow (Do Not Alter)
+
+```
+Browser → Better Auth (Session Cookie)
+       → /api/auth/jwt (Bridge Route)
+       → JWT Token
+       → Authorization: Bearer <token>
+       → FastAPI Backend
+       → PyJWT Verification
+       → AuthenticatedUser Dependency
+       → User-Scoped Data Access
+```
+
+### Environment Variables (Required)
+
+| Variable | Layer | Purpose |
+|----------|-------|---------|
+| `NEXT_PUBLIC_API_URL` | Frontend | Backend API base URL |
+| `BETTER_AUTH_SECRET` | Frontend | Session encryption |
+| `DATABASE_URL` | Both | Neon PostgreSQL connection |
+| `JWT_SECRET` | Both | JWT signing/verification |
+| `JWT_ALGORITHM` | Backend | HS256 (do not change) |
+
+### PHR Routing (Automatic)
+
+All Prompt History Records route to `history/prompts/`:
+- Constitution changes → `history/prompts/constitution/`
+- Feature work → `history/prompts/<feature-name>/`
+- General work → `history/prompts/general/`

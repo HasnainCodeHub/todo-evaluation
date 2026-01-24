@@ -1,4 +1,9 @@
-# Skill: better-auth-integration
+---
+name: better-auth-integration
+description: "Configure Better Auth on the frontend and coordinate JWT issuance. This skill should be used when setting up Better Auth in Next.js frontend, configuring authentication providers, handling user sessions, and coordinating token issuance for backend API authentication."
+---
+
+# Better Auth Integration
 
 ## Purpose
 Configure Better Auth on the frontend and coordinate JWT issuance. This skill establishes patterns for integrating Better Auth as the authentication provider, handling user sessions, and coordinating token issuance for backend API authentication.
@@ -17,6 +22,16 @@ Configure Better Auth on the frontend and coordinate JWT issuance. This skill es
 - When Better Auth isn't the chosen auth provider
 - When working on unauthenticated features
 - When the auth provider hasn't been confirmed
+
+## Required Clarifications
+1. What authentication providers are needed (email, Google, GitHub, etc.)?
+2. What is the Next.js project structure and app router setup?
+3. What are the backend API endpoints that require JWT authentication?
+4. Are there specific session duration requirements?
+
+## Optional Clarifications
+5. Are there specific UI/UX requirements for the authentication flow?
+6. Are there existing auth patterns in the codebase to follow?
 
 ## Responsibilities
 - Configure Better Auth client in Next.js
@@ -43,6 +58,33 @@ Configure Better Auth on the frontend and coordinate JWT issuance. This skill es
 - Login/logout flow documentation
 - Error handling patterns
 
+## Before Implementation
+
+Gather context to ensure successful implementation:
+
+| Source | Gather |
+|--------|--------|
+| **Codebase** | Existing structure, patterns, conventions |
+| **Conversation** | User's specific requirements |
+| **Skill References** | Domain patterns from `references/` |
+| **User Guidelines** | Project-specific conventions |
+
+## Implementation Workflow
+1. Assess existing auth infrastructure
+2. Configure Better Auth client with required providers
+3. Set up session management
+4. Integrate with backend JWT requirements
+5. Test authentication flows
+6. Document implementation
+
+## Output Checklist
+- [ ] Better Auth client configured correctly
+- [ ] Authentication providers set up
+- [ ] Secure session management implemented
+- [ ] JWT token coordination established
+- [ ] Error handling patterns in place
+- [ ] Security constraints followed
+
 ## Constraints
 - Never store tokens in localStorage (use httpOnly cookies)
 - Never expose auth secrets in client-side code
@@ -67,6 +109,18 @@ Configure Better Auth on the frontend and coordinate JWT issuance. This skill es
 - **Error swallowing:** Hiding auth errors from users
 - **CSRF ignorance:** Not implementing CSRF protection
 - **Refresh neglect:** Not handling token refresh properly
+
+## Security Best Practices
+- Use httpOnly cookies for token storage
+- Implement proper CSRF protection
+- Validate all redirect URLs
+- Handle token refresh securely
+- Use HTTPS for all auth operations
+
+## Documentation Resources
+- [Better Auth Official Documentation](https://better-auth.com/docs)
+- [Next.js Authentication Patterns](https://nextjs.org/docs/app/building-your-application/authentication)
+- [JWT Best Practices](https://jwt.io/introduction)
 
 ## Phase Applicability
 Phase II only. Phase I has no authentication requirements.
