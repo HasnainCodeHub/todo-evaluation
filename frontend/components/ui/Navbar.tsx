@@ -39,7 +39,7 @@ export function Navbar({ variant = 'transparent', showAuthButtons = true }: Navb
   }
 
   const navBackground = variant === 'solid' || isScrolled
-    ? 'bg-white/95 backdrop-blur-lg shadow-sm border-b border-surface-100'
+    ? 'bg-surface-950/95 backdrop-blur-lg border-b border-white/[0.06]'
     : 'bg-transparent'
 
   return (
@@ -54,8 +54,8 @@ export function Navbar({ variant = 'transparent', showAuthButtons = true }: Navb
               </svg>
             </div>
             <div className="hidden sm:block">
-              <span className="font-display font-bold text-xl text-surface-900">Evolution of Todo</span>
-              <span className="hidden lg:inline-block ml-2 px-2 py-0.5 bg-primary-100 text-primary-700 text-xs font-semibold rounded-full">
+              <span className="font-display font-bold text-xl text-white">Evolution of Todo</span>
+              <span className="hidden lg:inline-block ml-2 px-2 py-0.5 bg-white/5 text-white/50 text-xs font-semibold rounded-full border border-white/10">
                 AI-Native
               </span>
             </div>
@@ -69,8 +69,8 @@ export function Navbar({ variant = 'transparent', showAuthButtons = true }: Navb
                 href={link.href}
                 className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
                   isActive(link.href)
-                    ? 'text-primary-600 bg-primary-50'
-                    : 'text-surface-600 hover:text-surface-900 hover:bg-surface-50'
+                    ? 'text-primary-400 bg-white/5'
+                    : 'text-white/50 hover:text-white hover:bg-white/5'
                 }`}
               >
                 {link.label}
@@ -100,7 +100,7 @@ export function Navbar({ variant = 'transparent', showAuthButtons = true }: Navb
                 <>
                   <Link
                     href="/signin"
-                    className="px-4 py-2 text-sm font-medium text-surface-600 hover:text-surface-900 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-white/50 hover:text-white transition-colors"
                   >
                     Sign In
                   </Link>
@@ -118,7 +118,7 @@ export function Navbar({ variant = 'transparent', showAuthButtons = true }: Navb
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 text-surface-600 hover:text-surface-900 hover:bg-surface-100 rounded-lg transition-colors"
+            className="md:hidden p-2 text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
             aria-label="Toggle menu"
           >
             {isMobileMenuOpen ? (
@@ -147,8 +147,8 @@ export function Navbar({ variant = 'transparent', showAuthButtons = true }: Navb
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`block px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                   isActive(link.href)
-                    ? 'text-primary-600 bg-primary-50'
-                    : 'text-surface-600 hover:text-surface-900 hover:bg-surface-50'
+                    ? 'text-primary-400 bg-white/5'
+                    : 'text-white/50 hover:text-white hover:bg-white/5'
                 }`}
               >
                 {link.label}
@@ -156,9 +156,9 @@ export function Navbar({ variant = 'transparent', showAuthButtons = true }: Navb
             ))}
             {showAuthButtons && (
               <>
-                <hr className="my-2 border-surface-100" />
+                <hr className="my-2 border-white/[0.06]" />
                 {isPending ? (
-                  <div className="mx-4 h-12 bg-surface-100 rounded-xl animate-pulse" />
+                  <div className="mx-4 h-12 bg-white/5 rounded-xl animate-pulse" />
                 ) : isAuthenticated ? (
                   // Authenticated: Show Dashboard button on mobile
                   <Link
@@ -177,7 +177,7 @@ export function Navbar({ variant = 'transparent', showAuthButtons = true }: Navb
                     <Link
                       href="/signin"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="block px-4 py-3 text-sm font-medium text-surface-600 hover:text-surface-900 hover:bg-surface-50 rounded-lg transition-colors"
+                      className="block px-4 py-3 text-sm font-medium text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
                     >
                       Sign In
                     </Link>

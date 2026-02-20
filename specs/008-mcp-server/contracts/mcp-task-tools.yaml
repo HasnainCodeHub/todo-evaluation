@@ -1,0 +1,228 @@
+# MCP Tool Contracts: Task Management
+
+## Tool: add_task
+
+### Purpose
+Create a new task for the authenticated user
+
+### Input Schema
+```json
+{
+  "title": {
+    "type": "string",
+    "minLength": 1,
+    "maxLength": 200,
+    "required": true
+  },
+  "description": {
+    "type": "string",
+    "maxLength": 1000,
+    "required": false
+  }
+}
+```
+
+### Output Schema (Success)
+```json
+{
+  "success": true,
+  "task": {
+    "id": "integer",
+    "user_id": "string",
+    "title": "string",
+    "description": "string",
+    "completed": false,
+    "created_at": "datetime",
+    "updated_at": "datetime"
+  }
+}
+```
+
+### Output Schema (Error)
+```json
+{
+  "error": {
+    "code": "string",
+    "message": "string",
+    "details": {}
+  }
+}
+```
+
+---
+
+## Tool: list_tasks
+
+### Purpose
+Retrieve tasks for the authenticated user filtered by status
+
+### Input Schema
+```json
+{
+  "status": {
+    "type": "string",
+    "enum": ["all", "pending", "completed"],
+    "required": false,
+    "default": "all"
+  }
+}
+```
+
+### Output Schema (Success)
+```json
+{
+  "success": true,
+  "tasks": [
+    {
+      "id": "integer",
+      "user_id": "string",
+      "title": "string",
+      "description": "string",
+      "completed": "boolean",
+      "created_at": "datetime",
+      "updated_at": "datetime"
+    }
+  ]
+}
+```
+
+### Output Schema (Error)
+```json
+{
+  "error": {
+    "code": "string",
+    "message": "string",
+    "details": {}
+  }
+}
+```
+
+---
+
+## Tool: complete_task
+
+### Purpose
+Mark a task as completed for the authenticated user (idempotent)
+
+### Input Schema
+```json
+{
+  "task_id": {
+    "type": "integer",
+    "required": true
+  }
+}
+```
+
+### Output Schema (Success)
+```json
+{
+  "success": true,
+  "task": {
+    "id": "integer",
+    "completed": true,
+    "updated_at": "datetime"
+  }
+}
+```
+
+### Output Schema (Error)
+```json
+{
+  "error": {
+    "code": "string",
+    "message": "string",
+    "details": {}
+  }
+}
+```
+
+---
+
+## Tool: delete_task
+
+### Purpose
+Remove a task from the authenticated user's task list
+
+### Input Schema
+```json
+{
+  "task_id": {
+    "type": "integer",
+    "required": true
+  }
+}
+```
+
+### Output Schema (Success)
+```json
+{
+  "success": true,
+  "deleted_task_id": "integer"
+}
+```
+
+### Output Schema (Error)
+```json
+{
+  "error": {
+    "code": "string",
+    "message": "string",
+    "details": {}
+  }
+}
+```
+
+---
+
+## Tool: update_task
+
+### Purpose
+Modify task title and/or description for the authenticated user
+
+### Input Schema
+```json
+{
+  "task_id": {
+    "type": "integer",
+    "required": true
+  },
+  "title": {
+    "type": "string",
+    "minLength": 1,
+    "maxLength": 200,
+    "required": false
+  },
+  "description": {
+    "type": "string",
+    "maxLength": 1000,
+    "required": false
+  }
+}
+```
+
+### Output Schema (Success)
+```json
+{
+  "success": true,
+  "task": {
+    "id": "integer",
+    "user_id": "string",
+    "title": "string",
+    "description": "string",
+    "completed": "boolean",
+    "updated_at": "datetime"
+  }
+}
+```
+
+### Output Schema (Error)
+```json
+{
+  "error": {
+    "code": "string",
+    "message": "string",
+    "details": {}
+  }
+}
+```

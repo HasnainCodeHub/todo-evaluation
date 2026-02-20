@@ -407,3 +407,10 @@ All Prompt History Records route to `history/prompts/`:
 - Constitution changes → `history/prompts/constitution/`
 - Feature work → `history/prompts/<feature-name>/`
 - General work → `history/prompts/general/`
+
+## Active Technologies
+- Python 3.13+ (based on project requirements) + Official MCP SDK, SQLModel, Neon PostgreSQL, PyJWT for authentication (008-mcp-server)
+- Neon PostgreSQL database for persistent task storage (008-mcp-server)
+
+## Recent Changes
+- 008-mcp-server: Added Python 3.13+ (based on project requirements) + Official MCP SDK, SQLModel, Neon PostgreSQL, PyJWT for authentication

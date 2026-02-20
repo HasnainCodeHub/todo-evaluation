@@ -1,0 +1,247 @@
+openapi: "3.0.3"
+info:
+  title: Chatbot UI — Frontend API Contracts
+  description: >
+    API contracts consumed by the 010-chatbot-ui frontend feature.
+    The Next.js adapter route (app/api/chat/route.ts) bridges ChatKit
+    to the FastAPI backend. History restoration uses the existing
+    backend conversations endpoint.
+  version: "1.0.0"
+
+servers:
+  - url: http://localhost:3000
+    description: Next.js development server
+  - url: https://ai-based-todo.vercel.app
+    description: Production (Vercel)
+
+tags:
+  - name: chat-adapter
+    description: Next.js API route that proxies ChatKit messages to FastAPI backend
+  - name: conversation-history
+    description: Existing FastAPI endpoints used for history restoration (called via JWT bridge)
+
+paths:
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Next.js Adapter Route (new file: frontend/app/api/chat/route.ts)
+  # Bridges ChatKit → FastAPI /api/chat
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  /api/chat:
+    post:
+      tags: [chat-adapter]
+      summary: Send a chat message (adapter)
+      description: >
+        Accepts a chat message from the ChatKit component. Validates the
+        Better Auth session server-side, generates a JWT, and forwards the
+        message to the FastAPI backend. Returns the assistant's response.
+        This route requires an active Better Auth session (cookie-based).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdapterChatRequest"
+            examples:
+              new_conversation:
+                summary: First message (no conversation ID)
+                value:
+                  message: "Add a task to buy groceries"
+              existing_conversation:
+                summary: Follow-up message
+                value:
+                  message: "What tasks do I have?"
+                  conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        "200":
+          description: AI assistant response with conversation ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdapterChatResponse"
+              examples:
+                success:
+                  value:
+                    conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+                    message: "Done! I've added 'Buy groceries' to your task list."
+                    actions_taken: ["add_task: Buy groceries"]
+                    created_at: "2026-02-18T10:30:00Z"
+        "400":
+          description: Invalid request (empty message, invalid conversation_id)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "Message cannot be empty"
+        "401":
+          description: Session expired or not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "Your session has expired — please log in again"
+        "500":
+          description: Backend unreachable or internal error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "Something went wrong. Please try again."
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Existing FastAPI Endpoint — used for history restoration on page load
+  # Called via the JWT bridge pattern (apiClient.getJWT() → Authorization header)
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  /api/conversations/{conversation_id}:
+    get:
+      tags: [conversation-history]
+      summary: Get conversation with message history (existing backend endpoint)
+      description: >
+        Retrieves full message history for a conversation. Called on dashboard
+        page load when a conversation ID exists in localStorage (FR-007).
+        Requires JWT Bearer token in Authorization header.
+      parameters:
+        - name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID of the conversation to retrieve
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+          description: Maximum number of messages to return
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: "Bearer <jwt_token>"
+          example: "Bearer eyJhbGciOiJIUzI1NiJ9..."
+      responses:
+        "200":
+          description: Conversation with message history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationWithMessages"
+        "401":
+          description: JWT expired or invalid — redirect to login
+        "404":
+          description: Conversation not found or deleted — clear localStorage and start fresh
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Component Schemas
+# ─────────────────────────────────────────────────────────────────────────────
+
+components:
+  schemas:
+
+    AdapterChatRequest:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 10000
+          description: User's natural language message
+        conversation_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: >
+            ID of the existing conversation to continue. Omit or null
+            for the first message; include on all follow-up messages.
+
+    AdapterChatResponse:
+      type: object
+      required: [conversation_id, message, created_at]
+      properties:
+        conversation_id:
+          type: string
+          format: uuid
+          description: >
+            The conversation ID for this exchange. Save to localStorage
+            on first response.
+        message:
+          type: string
+          description: The AI assistant's response text
+        actions_taken:
+          type: array
+          items:
+            type: string
+          nullable: true
+          description: Optional list of MCP tool actions executed (e.g., "add_task: Buy groceries")
+        created_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of the response
+
+    ConversationWithMessages:
+      type: object
+      required: [id, created_at, updated_at, messages]
+      properties:
+        id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/ServerMessage"
+
+    ServerMessage:
+      type: object
+      required: [id, role, content, created_at]
+      properties:
+        id:
+          type: integer
+          description: Sequential database ID
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          description: User-friendly error message (no technical details exposed)
+
+  securitySchemes:
+    BetterAuthSession:
+      type: apiKey
+      in: cookie
+      name: better-auth.session_token
+      description: >
+        Better Auth session cookie. Present automatically for authenticated users.
+        The Next.js adapter reads this server-side to generate a JWT.
+
+    BearerJWT:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        JWT token for FastAPI backend. Generated by the JWT bridge route
+        (app/api/auth/jwt/route.ts) or server-side in the adapter.

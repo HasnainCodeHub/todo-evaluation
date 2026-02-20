@@ -34,6 +34,8 @@ backend/
 │   │                              # - DATABASE_URL
 │   │                              # - JWT_SECRET
 │   │                              # - JWT_ALGORITHM
+│   │                              # - OPENAI_API_KEY (Phase 3)
+│   │                              # - MCP_SERVER_URL (Phase 3)
 │   │
 │   ├── database.py                # SQLModel engine & session
 │   │                              # - get_engine()
@@ -42,19 +44,32 @@ backend/
 │   │
 │   ├── models/                    # SQLModel ORM entities
 │   │   ├── __init__.py
-│   │   └── task.py                # Task model with user_id
+│   │   ├── task.py                # Task model with user_id
+│   │   └── conversation.py        # Conversation & Message models (Phase 3)
 │   │
 │   ├── schemas/                   # Pydantic request/response
 │   │   ├── __init__.py
-│   │   └── task.py                # TaskCreate, TaskUpdate, TaskResponse
+│   │   ├── task.py                # TaskCreate, TaskUpdate, TaskResponse
+│   │   └── chat.py                # ChatRequest, ChatResponse (Phase 3)
 │   │
 │   ├── routers/                   # API route handlers
 │   │   ├── __init__.py
-│   │   └── tasks.py               # /api/tasks endpoints
+│   │   ├── tasks.py               # /api/tasks endpoints
+│   │   └── chat.py                # /api/chat endpoints (Phase 3)
 │   │
 │   ├── crud/                      # Database operations
 │   │   ├── __init__.py
-│   │   └── task.py                # CRUD functions with user scoping
+│   │   ├── task.py                # CRUD functions with user scoping
+│   │   └── conversation.py        # Conversation CRUD (Phase 3)
+│   │
+│   ├── services/                  # Business logic layer
+│   │   ├── __init__.py
+│   │   ├── task_service.py        # Task service
+│   │   └── chat_service.py        # Chat orchestration (Phase 3)
+│   │
+│   ├── agents/                    # AI agent implementations (Phase 3)
+│   │   ├── __init__.py
+│   │   └── chat_orchestrator.py   # OpenAI Agents SDK agent
 │   │
 │   └── dependencies/              # FastAPI dependencies
 │       ├── __init__.py
@@ -163,6 +178,8 @@ async def create_task(
 
 ## API Endpoints
 
+### Task Endpoints
+
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | `GET` | `/` | No | Service info |
@@ -174,6 +191,33 @@ async def create_task(
 | `PUT` | `/api/tasks/{id}` | Yes | Update task |
 | `DELETE` | `/api/tasks/{id}` | Yes | Delete task |
 | `PATCH` | `/api/tasks/{id}/complete` | Yes | Toggle completion |
+
+### Chat Endpoints (Phase 3: AI Chatbot Integration)
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| `POST` | `/api/chat` | Yes | Send message to AI assistant |
+| `GET` | `/api/conversations` | Yes | List user's conversations |
+| `GET` | `/api/conversations/{id}` | Yes | Get conversation with messages |
+| `DELETE` | `/api/conversations/{id}` | Yes | Delete a conversation |
+
+### Chat Request/Response Format
+
+```python
+# POST /api/chat request
+{
+    "message": "Add a task to buy groceries",
+    "conversation_id": null  # or existing conversation UUID
+}
+
+# POST /api/chat response
+{
+    "conversation_id": "550e8400-e29b-41d4-a716-446655440000",
+    "message": "Done! I've added 'Buy groceries' to your task list.",
+    "actions_taken": ["add_task: Buy groceries"],
+    "created_at": "2026-02-06T10:30:00Z"
+}
+```
 
 ### Error Response Format
 

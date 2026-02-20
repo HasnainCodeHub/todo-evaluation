@@ -20,7 +20,6 @@ function SignInForm() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Redirect once authenticated
   useEffect(() => {
     if (!isPending && session?.user && !hasRedirected.current) {
       hasRedirected.current = true
@@ -32,21 +31,12 @@ function SignInForm() {
     e.preventDefault()
     setError('')
     setLoading(true)
-
     try {
       if (isSignUp) {
-        await signUp.email({
-          email,
-          password,
-          name,
-        })
+        await signUp.email({ email, password, name })
       } else {
-        await signIn.email({
-          email,
-          password,
-        })
+        await signIn.email({ email, password })
       }
-      // Redirect handled by session effect
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication failed')
       setLoading(false)
@@ -55,7 +45,7 @@ function SignInForm() {
 
   if (isPending) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface-50">
+      <div className="min-h-screen flex items-center justify-center bg-surface-950">
         <div className="animate-spin h-8 w-8 border-4 border-primary-500 border-t-transparent rounded-full" />
       </div>
     )
@@ -63,8 +53,8 @@ function SignInForm() {
 
   if (session?.user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface-50">
-        <div className="flex items-center gap-3 text-surface-600">
+      <div className="min-h-screen flex items-center justify-center bg-surface-950">
+        <div className="flex items-center gap-3 text-white/50">
           <div className="animate-spin h-5 w-5 border-2 border-primary-500 border-t-transparent rounded-full" />
           Redirecting to dashboard...
         </div>
@@ -73,44 +63,40 @@ function SignInForm() {
   }
 
   return (
-    <main className="min-h-screen flex">
-      {/* Left Panel - Decorative (hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary-600 via-primary-700 to-accent-700 relative overflow-hidden">
-        {/* Animated background shapes */}
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-white/10 rounded-full blur-3xl animate-float" />
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent-400/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s', animationDirection: 'reverse' }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/5 rounded-full blur-2xl animate-pulse-slow" />
-        </div>
-
-        {/* Dot pattern overlay */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
-            backgroundSize: '32px 32px'
-          }} />
-        </div>
+    <main className="min-h-screen flex bg-surface-950">
+      {/* ── Left Panel (decorative, desktop only) ── */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-surface-900 border-r border-white/[0.06]">
+        {/* Grid overlay */}
+        <div className="absolute inset-0" style={{
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)',
+          backgroundSize: '48px 48px'
+        }} />
+        {/* Radial glow */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_30%_40%,rgba(139,92,246,0.12),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_40%_at_70%_70%,rgba(6,182,212,0.06),transparent)]" />
 
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 mb-12">
-            <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <Link href="/" className="flex items-center gap-3 mb-14">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
-            <span className="font-display font-bold text-2xl text-white">Evolution of Todo</span>
+            <span className="font-display font-bold text-xl text-white">Evolution of Todo</span>
           </Link>
 
           {/* Headline */}
-          <h1 className="font-display text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight">
+          <h1 className="font-display text-4xl xl:text-5xl font-bold text-white mb-5 leading-tight">
             Manage your tasks<br />
-            <span className="text-accent-300">with elegance</span>
+            <span className="bg-gradient-to-r from-primary-400 via-primary-300 to-accent-400 bg-clip-text text-transparent">
+              with AI.
+            </span>
           </h1>
 
-          <p className="text-lg text-white/80 mb-10 max-w-md">
-            Join thousands of developers who trust Evolution of Todo for their daily productivity.
+          <p className="text-white/40 text-base mb-10 max-w-sm leading-relaxed">
+            Join engineers who manage their entire backlog through natural language — no forms, no friction.
           </p>
 
           {/* Feature list */}
@@ -121,49 +107,49 @@ function SignInForm() {
               'Cloud-first platform with 99% uptime',
               'Enterprise-grade security built-in',
             ].map((feature, index) => (
-              <div key={index} className="flex items-center gap-3 text-white/90">
-                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-accent-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <div key={index} className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded-full bg-primary-500/10 border border-primary-500/20 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-3 h-3 text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <span className="text-sm font-medium">{feature}</span>
+                <span className="text-sm text-white/60">{feature}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Right Panel - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center bg-surface-50 px-6 py-12">
+      {/* ── Right Panel (form) ── */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
-          {/* Mobile Logo */}
-          <div className="lg:hidden mb-8 text-center">
+          {/* Mobile logo */}
+          <div className="lg:hidden mb-10 text-center">
             <Link href="/" className="inline-flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
-              <span className="font-display font-bold text-xl text-surface-900">Evolution of Todo</span>
+              <span className="font-display font-bold text-xl text-white">Evolution of Todo</span>
             </Link>
           </div>
 
           {/* Header */}
-          <div className="text-center mb-8">
-            <h2 className="font-display text-3xl font-bold text-surface-900 mb-2">
+          <div className="mb-8">
+            <h2 className="font-display text-3xl font-bold text-white mb-2">
               {isSignUp ? 'Create your account' : 'Welcome back'}
             </h2>
-            <p className="text-surface-600">
+            <p className="text-white/40 text-sm">
               {isSignUp
                 ? 'Start managing your tasks today'
                 : 'Sign in to continue to your dashboard'}
             </p>
           </div>
 
-          {/* Error message */}
+          {/* Error */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-start gap-3">
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm flex items-start gap-3">
               <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -175,7 +161,7 @@ function SignInForm() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {isSignUp && (
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-surface-700 mb-2">
+                <label htmlFor="name" className="block text-sm font-medium text-white/60 mb-2">
                   Full name
                 </label>
                 <input
@@ -191,7 +177,7 @@ function SignInForm() {
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-surface-700 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-white/60 mb-2">
                 Email address
               </label>
               <input
@@ -207,7 +193,7 @@ function SignInForm() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-surface-700 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-white/60 mb-2">
                 Password
               </label>
               <input
@@ -236,22 +222,18 @@ function SignInForm() {
                   </svg>
                   Processing...
                 </span>
-              ) : isSignUp ? (
-                'Create account'
-              ) : (
-                'Sign in'
-              )}
+              ) : isSignUp ? 'Create account' : 'Sign in'}
             </button>
           </form>
 
           {/* Toggle mode */}
-          <p className="mt-8 text-center text-sm text-surface-600">
+          <p className="mt-8 text-center text-sm text-white/40">
             {isSignUp ? (
               <>
                 Already have an account?{' '}
                 <button
                   onClick={() => router.push('/signin?mode=signin')}
-                  className="font-semibold text-primary-600 hover:text-primary-700 transition-colors"
+                  className="font-semibold text-primary-400 hover:text-primary-300 transition-colors"
                 >
                   Sign in
                 </button>
@@ -261,7 +243,7 @@ function SignInForm() {
                 Don&apos;t have an account?{' '}
                 <button
                   onClick={() => router.push('/signin?mode=signup')}
-                  className="font-semibold text-primary-600 hover:text-primary-700 transition-colors"
+                  className="font-semibold text-primary-400 hover:text-primary-300 transition-colors"
                 >
                   Create account
                 </button>
@@ -273,7 +255,7 @@ function SignInForm() {
           <div className="mt-8 text-center">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-sm text-surface-500 hover:text-surface-700 transition-colors"
+              className="inline-flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -290,7 +272,7 @@ function SignInForm() {
 export default function SignInPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-surface-50">
+      <div className="min-h-screen flex items-center justify-center bg-surface-950">
         <div className="animate-spin h-8 w-8 border-4 border-primary-500 border-t-transparent rounded-full" />
       </div>
     }>

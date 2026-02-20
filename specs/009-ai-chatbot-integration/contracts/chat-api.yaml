@@ -1,0 +1,348 @@
+openapi: 3.1.0
+info:
+  title: AI Chatbot API
+  description: |
+    Chat endpoint for AI-powered task management. The chat-orchestrator agent
+    interprets natural language requests and executes task operations via MCP tools.
+  version: 1.0.0
+  contact:
+    name: AI Todo Team
+
+servers:
+  - url: https://todo-backend-xi-eosin.vercel.app
+    description: Production
+  - url: http://localhost:8000
+    description: Development
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/chat:
+    post:
+      operationId: chat
+      summary: Send a message to the AI assistant
+      description: |
+        Send a natural language message to the chat-orchestrator agent.
+        The agent interprets intent, invokes MCP tools as needed, and returns
+        a user-friendly response. Conversation history is automatically managed.
+      tags:
+        - Chat
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+            examples:
+              newConversation:
+                summary: Start new conversation
+                value:
+                  message: "Add a task to buy groceries"
+              continueConversation:
+                summary: Continue existing conversation
+                value:
+                  message: "Mark the groceries task as done"
+                  conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Successful response from AI assistant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+              examples:
+                taskCreated:
+                  summary: Task creation response
+                  value:
+                    conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+                    message: "Done! I've added 'Buy groceries' to your task list."
+                    actions_taken:
+                      - "add_task: Buy groceries"
+                    created_at: "2026-02-06T10:30:00Z"
+                taskListed:
+                  summary: Task listing response
+                  value:
+                    conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+                    message: "Here are your tasks:\n1. Buy groceries (pending)\n2. Call mom (completed)"
+                    actions_taken:
+                      - "list_tasks"
+                    created_at: "2026-02-06T10:31:00Z"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "INVALID_REQUEST"
+                  message: "Message cannot be empty"
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "UNAUTHORIZED"
+                  message: "Authentication required"
+        '503':
+          description: Service unavailable (MCP server unreachable)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "SERVICE_UNAVAILABLE"
+                  message: "I'm having trouble completing that action right now. Please try again."
+
+  /api/conversations:
+    get:
+      operationId: listConversations
+      summary: List user's conversations
+      description: Get all conversations for the authenticated user, ordered by most recent activity.
+      tags:
+        - Conversations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+          description: Maximum number of conversations to return
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+          description: Number of conversations to skip
+      responses:
+        '200':
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConversationResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/conversations/{conversation_id}:
+    get:
+      operationId: getConversation
+      summary: Get conversation with messages
+      description: Get a specific conversation and its message history.
+      tags:
+        - Conversations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Conversation ID
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+          description: Maximum number of messages to return
+      responses:
+        '200':
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationWithMessages'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      operationId: deleteConversation
+      summary: Delete a conversation
+      description: Delete a conversation and all its messages.
+      tags:
+        - Conversations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Conversation ID
+      responses:
+        '204':
+          description: Conversation deleted successfully
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from /api/auth/jwt bridge endpoint
+
+  schemas:
+    ChatRequest:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 10000
+          description: User's natural language message
+        conversation_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID of existing conversation to continue, or null to start new
+
+    ChatResponse:
+      type: object
+      required:
+        - conversation_id
+        - message
+        - created_at
+      properties:
+        conversation_id:
+          type: string
+          format: uuid
+          description: ID of the conversation (new or existing)
+        message:
+          type: string
+          description: AI assistant's response
+        actions_taken:
+          type: array
+          items:
+            type: string
+          nullable: true
+          description: List of MCP tool actions executed
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp of the response
+
+    ConversationResponse:
+      type: object
+      required:
+        - id
+        - created_at
+        - updated_at
+        - message_count
+      properties:
+        id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        message_count:
+          type: integer
+
+    ConversationWithMessages:
+      type: object
+      required:
+        - id
+        - created_at
+        - updated_at
+        - messages
+      properties:
+        id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageResponse'
+
+    MessageResponse:
+      type: object
+      required:
+        - id
+        - role
+        - content
+        - created_at
+      properties:
+        id:
+          type: integer
+        role:
+          type: string
+          enum:
+            - user
+            - assistant
+        content:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code
+            message:
+              type: string
+              description: Human-readable error message

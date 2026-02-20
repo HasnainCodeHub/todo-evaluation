@@ -18,17 +18,12 @@ export default function TaskForm({ onSubmit, isLoading = false }: TaskFormProps)
   const [shake, setShake] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Clear error when typing
   useEffect(() => {
-    if (title && titleError) {
-      setTitleError('')
-    }
+    if (title && titleError) setTitleError('')
   }, [title, titleError])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-
-    // Validation with shake animation
     if (!title.trim()) {
       setTitleError('Title is required')
       setShake(true)
@@ -36,37 +31,26 @@ export default function TaskForm({ onSubmit, isLoading = false }: TaskFormProps)
       inputRef.current?.focus()
       return
     }
-
     if (title.length > 200) {
       setTitleError('Title must be less than 200 characters')
       setShake(true)
       setTimeout(() => setShake(false), 500)
       return
     }
-
     if (description && description.length > 1000) {
       setTitleError('Description must be less than 1000 characters')
       return
     }
-
     setTitleError('')
-
     try {
-      await onSubmit({
-        title: title.trim(),
-        description: description.trim() || undefined,
-      })
-
-      // Show success animation
+      await onSubmit({ title: title.trim(), description: description.trim() || undefined })
       setShowSuccess(true)
       setTimeout(() => setShowSuccess(false), 1500)
-
-      // Clear form on success
       setTitle('')
       setDescription('')
       setIsExpanded(false)
     } catch {
-      // Error is handled by parent component
+      // Error handled by parent
     }
   }
 
@@ -79,14 +63,10 @@ export default function TaskForm({ onSubmit, isLoading = false }: TaskFormProps)
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Title field */}
       <div className="relative">
-        <label className="flex items-center justify-between text-sm font-medium text-surface-700 mb-2">
-          <span>
-            Task title <span className="text-red-500">*</span>
-          </span>
+        <label className="flex items-center justify-between text-sm font-medium text-white/60 mb-2">
+          <span>Task title <span className="text-red-400">*</span></span>
           {isNearLimit && (
-            <span className={`text-xs tabular-nums transition-colors duration-200 ${
-              isAtLimit ? 'text-red-500 font-semibold' : 'text-amber-500'
-            }`}>
+            <span className={`text-xs tabular-nums transition-colors duration-200 ${isAtLimit ? 'text-red-400 font-semibold' : 'text-amber-400'}`}>
               {titleLength}/200
             </span>
           )}
@@ -98,38 +78,29 @@ export default function TaskForm({ onSubmit, isLoading = false }: TaskFormProps)
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            onFocus={() => {
-              setIsExpanded(true)
-              setIsFocused(true)
-            }}
+            onFocus={() => { setIsExpanded(true); setIsFocused(true) }}
             onBlur={() => setIsFocused(false)}
             disabled={isLoading}
             placeholder="What needs to be done?"
-            className={`w-full px-4 py-3.5 bg-white border-2 rounded-xl text-surface-900 placeholder-surface-400
-              transition-all duration-300 ease-out
+            className={`w-full px-4 py-3.5 bg-white/[0.04] border rounded-xl text-white placeholder-white/25
+              transition-all duration-300 ease-out focus:outline-none
+              disabled:opacity-60 disabled:cursor-not-allowed
               ${titleError
-                ? 'border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-500/10'
+                ? 'border-red-500/40 focus:border-red-500 focus:ring-4 focus:ring-red-500/10'
                 : isFocused
                   ? 'border-primary-500 ring-4 ring-primary-500/10'
-                  : 'border-surface-200 hover:border-surface-300'
-              }
-              focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed`}
+                  : 'border-white/10 hover:border-white/20'
+              }`}
             maxLength={200}
           />
-
-          {/* Progress bar for title length */}
           {isNearLimit && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-surface-100 rounded-b-xl overflow-hidden">
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/10 rounded-b-xl overflow-hidden">
               <div
-                className={`h-full transition-all duration-300 ${
-                  isAtLimit ? 'bg-red-500' : 'bg-amber-500'
-                }`}
+                className={`h-full transition-all duration-300 ${isAtLimit ? 'bg-red-500' : 'bg-amber-500'}`}
                 style={{ width: `${Math.min(titleProgress, 100)}%` }}
               />
             </div>
           )}
-
-          {/* Success checkmark */}
           {showSuccess && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
               <div className="w-6 h-6 bg-success-500 rounded-full flex items-center justify-center animate-pop">
@@ -141,11 +112,8 @@ export default function TaskForm({ onSubmit, isLoading = false }: TaskFormProps)
           )}
         </div>
 
-        {/* Error message with animation */}
-        <div className={`overflow-hidden transition-all duration-300 ${
-          titleError ? 'max-h-10 opacity-100 mt-2' : 'max-h-0 opacity-0'
-        }`}>
-          <p className="text-sm text-red-600 flex items-center gap-1.5 animate-slide-up-fade">
+        <div className={`overflow-hidden transition-all duration-300 ${titleError ? 'max-h-10 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+          <p className="text-sm text-red-400 flex items-center gap-1.5">
             <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -154,17 +122,11 @@ export default function TaskForm({ onSubmit, isLoading = false }: TaskFormProps)
         </div>
       </div>
 
-      {/* Expandable description */}
-      <div className={`transition-all duration-500 ease-out overflow-hidden ${
-        isExpanded ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'
-      }`}>
-        <label className="flex items-center justify-between text-sm font-medium text-surface-700 mb-2">
-          <span>
-            Description <span className="text-surface-400 font-normal">(optional)</span>
-          </span>
-          <span className={`text-xs tabular-nums transition-colors duration-200 ${
-            description.length > 900 ? 'text-amber-500' : 'text-surface-400'
-          }`}>
+      {/* Description */}
+      <div className={`transition-all duration-500 ease-out overflow-hidden ${isExpanded ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'}`}>
+        <label className="flex items-center justify-between text-sm font-medium text-white/60 mb-2">
+          <span>Description <span className="text-white/30 font-normal">(optional)</span></span>
+          <span className={`text-xs tabular-nums transition-colors duration-200 ${description.length > 900 ? 'text-amber-400' : 'text-white/30'}`}>
             {description.length}/1000
           </span>
         </label>
@@ -174,16 +136,16 @@ export default function TaskForm({ onSubmit, isLoading = false }: TaskFormProps)
           disabled={isLoading}
           placeholder="Add more details about this task..."
           rows={3}
-          className="w-full px-4 py-3 bg-white border-2 border-surface-200 rounded-xl text-surface-900 placeholder-surface-400
+          className="w-full px-4 py-3 bg-white/[0.04] border border-white/10 rounded-xl text-white placeholder-white/25
             transition-all duration-300 ease-out resize-none
-            hover:border-surface-300
+            hover:border-white/20
             focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 focus:outline-none
             disabled:opacity-60 disabled:cursor-not-allowed"
           maxLength={1000}
         />
       </div>
 
-      {/* Submit button with enhanced styling */}
+      {/* Submit */}
       <button
         type="submit"
         disabled={isLoading || !title.trim()}
@@ -192,19 +154,9 @@ export default function TaskForm({ onSubmit, isLoading = false }: TaskFormProps)
           disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
           active:scale-[0.98]"
       >
-        {/* Background gradient */}
         <span className="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-500" />
-
-        {/* Hover gradient */}
         <span className="absolute inset-0 bg-gradient-to-r from-primary-500 to-accent-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-        {/* Shine effect */}
         <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-
-        {/* Shadow */}
-        <span className="absolute inset-0 rounded-xl shadow-lg shadow-primary-500/30 group-hover:shadow-xl group-hover:shadow-primary-500/40 transition-shadow duration-300" />
-
-        {/* Content */}
         <span className="relative flex items-center justify-center gap-2.5">
           {isLoading ? (
             <>
@@ -225,9 +177,8 @@ export default function TaskForm({ onSubmit, isLoading = false }: TaskFormProps)
         </span>
       </button>
 
-      {/* Helper text */}
       {!isExpanded && (
-        <p className="text-xs text-surface-400 text-center animate-fade-in">
+        <p className="text-xs text-white/25 text-center">
           Click the title field to add more details
         </p>
       )}

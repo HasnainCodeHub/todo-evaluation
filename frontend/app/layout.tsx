@@ -77,11 +77,11 @@ export default function RootLayout({
         <meta name="application-name" content="EvoTask Pro" />
         <meta name="msapplication-TileColor" content="#8b5cf6" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
-        <meta name="color-scheme" content="light only" />
-        <meta name="supported-color-schemes" content="light only" />
+        <meta name="color-scheme" content="dark" />
+        <meta name="supported-color-schemes" content="dark" />
       </head>
       <body
-        className="font-sans antialiased bg-surface-50 text-surface-900"
+        className="font-sans antialiased bg-surface-950 text-white"
         suppressHydrationWarning
       >
         <div className="min-h-screen">
