@@ -180,10 +180,9 @@ export default function ChatPanel({ onTasksChanged }: ChatPanelProps) {
 
       if (response.status === 401) {
         replaceLoadingMessage(loadingMsgId, {
-          content: 'Your session has expired — please log in again',
+          content: 'Your session has expired. Please sign out and sign in again.',
           isError: true,
         })
-        setTimeout(() => { window.location.href = '/signin' }, 2000)
         return
       }
 

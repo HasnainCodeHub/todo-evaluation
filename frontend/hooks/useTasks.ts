@@ -3,7 +3,6 @@
 // Updates state ONLY after successful API responses (no optimistic updates)
 
 import { useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
 import { apiClient } from '../lib/api/client'
 import type { Task, TaskCreateRequest, TaskUpdateRequest } from '../types/task'
 
@@ -11,16 +10,16 @@ export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
 
   /**
-   * Handle session invalid errors by redirecting to signin.
-   * This occurs when Better Auth session is invalid or JWT is rejected by backend.
+   * Handle session invalid errors by setting an error state.
+   * We do NOT redirect here — the dashboard auth guard handles actual session expiry.
+   * Auto-redirecting on backend 401s causes an infinite loop with the middleware.
    */
   const handleSessionError = useCallback(() => {
-    console.log('[useTasks] Session invalid, redirecting to signin')
-    router.replace('/signin')
-  }, [router])
+    console.warn('[useTasks] Session invalid or backend rejected token')
+    setError('Session expired. Please sign out and sign in again.')
+  }, [])
 
   // Fetch all tasks from API
   const refresh = useCallback(async () => {

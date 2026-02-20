@@ -19,6 +19,14 @@ function SignInForm() {
   const [name, setName] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [passwordTouched, setPasswordTouched] = useState(false)
+
+  const pwRules = {
+    length: password.length >= 8,
+    upper: /[A-Z]/.test(password),
+    number: /[0-9]/.test(password),
+  }
+  const passwordValid = pwRules.length && pwRules.upper && pwRules.number
 
   useEffect(() => {
     if (!isPending && session?.user && !hasRedirected.current) {
@@ -30,12 +38,28 @@ function SignInForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    if (isSignUp && !passwordValid) {
+      setPasswordTouched(true)
+      return
+    }
+
     setLoading(true)
     try {
       if (isSignUp) {
-        await signUp.email({ email, password, name })
+        const result = await signUp.email({ email, password, name })
+        if (result?.error) {
+          setError(result.error.message ?? 'Sign up failed. Please try again.')
+          setLoading(false)
+          return
+        }
       } else {
-        await signIn.email({ email, password })
+        const result = await signIn.email({ email, password })
+        if (result?.error) {
+          setError(result.error.message ?? 'Invalid email or password.')
+          setLoading(false)
+          return
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication failed')
@@ -199,20 +223,54 @@ function SignInForm() {
               <input
                 id="password"
                 type="password"
-                placeholder={isSignUp ? 'Create a password (min. 6 characters)' : 'Enter your password'}
+                placeholder={isSignUp ? 'Create a password' : 'Enter your password'}
                 required
-                minLength={6}
+                minLength={isSignUp ? 8 : undefined}
                 autoComplete={isSignUp ? 'new-password' : 'current-password'}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input-modern"
+                onChange={(e) => { setPassword(e.target.value); setPasswordTouched(true) }}
+                className={`input-modern ${isSignUp && passwordTouched && !passwordValid ? 'border-red-500/50 focus:border-red-500' : ''}`}
               />
+
+              {/* Live password requirements — signup only */}
+              {isSignUp && passwordTouched && (
+                <ul className="mt-3 space-y-1.5">
+                  {[
+                    { ok: pwRules.length, label: 'At least 8 characters' },
+                    { ok: pwRules.upper,  label: 'At least one uppercase letter' },
+                    { ok: pwRules.number, label: 'At least one number' },
+                  ].map(({ ok, label }) => (
+                    <li key={label} className="flex items-center gap-2 text-xs">
+                      {ok ? (
+                        <svg className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <svg className="w-3.5 h-3.5 text-red-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      )}
+                      <span className={ok ? 'text-emerald-400' : 'text-red-400'}>{label}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {/* All requirements met — show success hint */}
+              {isSignUp && passwordTouched && passwordValid && (
+                <p className="mt-2 flex items-center gap-1.5 text-xs text-emerald-400">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Password looks good
+                </p>
+              )}
             </div>
 
             <button
               type="submit"
-              disabled={loading}
-              className="btn-gradient w-full py-3.5 text-base"
+              disabled={loading || (isSignUp && passwordTouched && !passwordValid)}
+              className="btn-gradient w-full py-3.5 text-base disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">

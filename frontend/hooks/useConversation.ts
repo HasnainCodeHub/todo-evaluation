@@ -58,14 +58,9 @@ export function useConversation() {
         // Get JWT from bridge (client-side)
         const jwtRes = await fetch('/api/auth/jwt', { credentials: 'include' })
         if (!jwtRes.ok) {
-          if (jwtRes.status === 401) {
-            // Session expired — clear localStorage and redirect
-            try { localStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
-            setConversationIdState(null)
-            window.location.href = '/signin'
-            return
-          }
-          // Other error — start fresh silently
+          // Any error (including 401) — clear conversation and start fresh silently.
+          // Do NOT redirect here: the dashboard auth guard handles true session expiry.
+          // Redirecting here causes an infinite loop (middleware bounces back to /dashboard).
           try { localStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
           setConversationIdState(null)
           return
@@ -85,9 +80,10 @@ export function useConversation() {
         }
 
         if (convRes.status === 401) {
+          // Clear conversation and start fresh — do NOT redirect.
+          // The dashboard auth guard handles true session expiry.
           try { localStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
           setConversationIdState(null)
-          window.location.href = '/signin'
           return
         }
 
