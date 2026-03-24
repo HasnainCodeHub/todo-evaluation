@@ -82,7 +82,10 @@ frontend/
     └── index.ts                  ← MODIFIED: Re-export from chat.ts
 ```
 
-**No backend changes required.** All backend endpoints already exist.
+Task metadata enhancement requires backend and frontend changes:
+- backend task model, schema, CRUD, and router updates for `priority`, `due_date`, and `category`
+- a safe startup schema patch for existing databases
+- frontend task form, edit form, types, and task-card display updates
 
 ---
 
@@ -148,6 +151,47 @@ Implementation: Change `lg:col-span-2` on task list `<div>` to `lg:col-span-1`, 
 
 ## Key Implementation Details
 
+### 0. Delete Confirmation Gate (NEW)
+
+- If a chat message has delete intent, the UI must show a confirmation popup before sending any request.
+- `Yes` continues with the exact original message payload.
+- `No` closes the popup and keeps the user on the dashboard without sending.
+- Implementation is frontend-only and reuses existing `ConfirmDialog` to keep UX consistent with task-card deletion.
+
+### 0.1 Task ID Visibility for Chat Precision (NEW)
+
+- Show task IDs directly in each task card in the dashboard list.
+- Add a lightweight hint that IDs can be used in AI chat commands.
+- Keep this frontend-only; no backend API changes required.
+
+### 0.2 Completion Feedback In Task Cards (NEW)
+
+- When a task is being marked complete, show a task-specific inline loading message.
+- After the API call succeeds, show a short success banner with a completion icon.
+- Keep the feedback local to the affected task card so other tasks do not show misleading progress.
+
+### 0.3 Unified Professional Action Feedback (NEW)
+
+- Reuse the same professional feedback tone across task actions.
+- Keep inline banners for actions where the card remains visible (complete, reopen, update).
+- Use toast notifications for actions where the source UI element disappears on success (delete) or where form-level confirmation is clearer (create).
+
+### 0.4 Professional Task Metadata Row (NEW)
+
+- Use existing task fields only: `id`, `created_at`, and `updated_at`.
+- Present metadata in a compact row beneath the main task content.
+- Include a human-friendly last-modified label derived from `updated_at` so the card feels operational rather than decorative.
+
+### 0.5 Structured Task Creation Metadata (NEW)
+
+- Extend task contracts with:
+  - `priority`: `low | medium | high`
+  - `due_date`: optional ISO datetime
+  - `category`: optional short label
+- Persist the new fields in backend storage and include them in task API responses.
+- Surface them in create/edit forms and task cards using compact professional UI elements.
+- Because `SQLModel.metadata.create_all()` does not alter existing tables, apply an idempotent startup schema patch to add missing task columns in current databases.
+
 ### 1. Next.js Adapter Route (`app/api/chat/route.ts`)
 
 - Runtime: `export const runtime = 'nodejs'` (required for Better Auth session access)
@@ -166,6 +210,10 @@ Implementation: Change `lg:col-span-2` on task list `<div>` to `lg:col-span-1`, 
 - Calls `onTasksChanged()` prop callback after each assistant response (triggers `tasks.refresh()`)
 - Renders error messages inline in conversation (no toast — per spec)
 - Auto-scrolls to latest message (FR-008)
+- Adds delete confirmation modal for delete-intent submissions:
+  - Detect intent from message text
+  - Block send and open modal
+  - Confirm sends original message; cancel aborts
 
 ### 3. useConversation Hook (`hooks/useConversation.ts`)
 
@@ -221,3 +269,5 @@ All required backend endpoints exist:
 ## Complexity Tracking
 
 No constitution violations. No complexity justifications required.
+
+

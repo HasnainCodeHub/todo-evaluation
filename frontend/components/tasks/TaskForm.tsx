@@ -1,16 +1,22 @@
 'use client'
 
 import { useState, FormEvent, useRef, useEffect } from 'react'
+import { useToast } from '../ui/Toast'
+import type { TaskPriority } from '../../types/task'
 
 interface TaskFormProps {
-  onSubmit: (data: { title: string; description?: string }) => Promise<void>
+  onSubmit: (data: { title: string; description?: string; priority: TaskPriority; due_date?: string; category?: string }) => Promise<void>
   isLoading?: boolean
   error?: string | null
 }
 
 export default function TaskForm({ onSubmit, isLoading = false }: TaskFormProps) {
+  const { addToast } = useToast()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [priority, setPriority] = useState<TaskPriority>('medium')
+  const [dueDate, setDueDate] = useState('')
+  const [category, setCategory] = useState('')
   const [titleError, setTitleError] = useState('')
   const [isExpanded, setIsExpanded] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
@@ -41,13 +47,27 @@ export default function TaskForm({ onSubmit, isLoading = false }: TaskFormProps)
       setTitleError('Description must be less than 1000 characters')
       return
     }
+    if (category && category.length > 50) {
+      setTitleError('Category must be less than 50 characters')
+      return
+    }
     setTitleError('')
     try {
-      await onSubmit({ title: title.trim(), description: description.trim() || undefined })
+      await onSubmit({
+        title: title.trim(),
+        description: description.trim() || undefined,
+        priority,
+        due_date: dueDate ? new Date(dueDate).toISOString() : undefined,
+        category: category.trim() || undefined,
+      })
       setShowSuccess(true)
       setTimeout(() => setShowSuccess(false), 1500)
+      addToast(`Task "${title.trim()}" was created successfully.`, 'success')
       setTitle('')
       setDescription('')
+      setPriority('medium')
+      setDueDate('')
+      setCategory('')
       setIsExpanded(false)
     } catch {
       // Error handled by parent
@@ -122,8 +142,8 @@ export default function TaskForm({ onSubmit, isLoading = false }: TaskFormProps)
         </div>
       </div>
 
-      {/* Description */}
-      <div className={`transition-all duration-500 ease-out overflow-hidden ${isExpanded ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'}`}>
+      {/* Description and metadata */}
+      <div className={`transition-all duration-500 ease-out overflow-hidden ${isExpanded ? 'max-h-[34rem] opacity-100' : 'max-h-0 opacity-0'}`}>
         <label className="flex items-center justify-between text-sm font-medium text-white/60 mb-2">
           <span>Description <span className="text-white/30 font-normal">(optional)</span></span>
           <span className={`text-xs tabular-nums transition-colors duration-200 ${description.length > 900 ? 'text-amber-400' : 'text-white/30'}`}>
@@ -142,7 +162,63 @@ export default function TaskForm({ onSubmit, isLoading = false }: TaskFormProps)
             focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 focus:outline-none
             disabled:opacity-60 disabled:cursor-not-allowed"
           maxLength={1000}
-        />
+          />
+
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <div>
+            <label className="block text-sm font-medium text-white/60 mb-2">Priority</label>
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value as TaskPriority)}
+              disabled={isLoading}
+              className="w-full px-4 py-3 bg-white/[0.04] border border-white/10 rounded-xl text-white
+                transition-all duration-300 ease-out
+                hover:border-white/20 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 focus:outline-none
+                disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <option value="low" className="bg-surface-950">Low</option>
+              <option value="medium" className="bg-surface-950">Medium</option>
+              <option value="high" className="bg-surface-950">High</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-white/60 mb-2">
+              Due Date <span className="text-white/30 font-normal">(optional)</span>
+            </label>
+            <input
+              type="datetime-local"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              disabled={isLoading}
+              className="w-full px-4 py-3 bg-white/[0.04] border border-white/10 rounded-xl text-white
+                transition-all duration-300 ease-out
+                hover:border-white/20 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 focus:outline-none
+                disabled:opacity-60 disabled:cursor-not-allowed"
+            />
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <label className="flex items-center justify-between text-sm font-medium text-white/60 mb-2">
+            <span>Category <span className="text-white/30 font-normal">(optional)</span></span>
+            <span className={`text-xs tabular-nums transition-colors duration-200 ${category.length > 40 ? 'text-amber-400' : 'text-white/30'}`}>
+              {category.length}/50
+            </span>
+          </label>
+          <input
+            type="text"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            disabled={isLoading}
+            placeholder="Work, Personal, Follow-up..."
+            maxLength={50}
+            className="w-full px-4 py-3 bg-white/[0.04] border border-white/10 rounded-xl text-white placeholder-white/25
+              transition-all duration-300 ease-out
+              hover:border-white/20 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 focus:outline-none
+              disabled:opacity-60 disabled:cursor-not-allowed"
+          />
+        </div>
       </div>
 
       {/* Submit */}
@@ -164,7 +240,7 @@ export default function TaskForm({ onSubmit, isLoading = false }: TaskFormProps)
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
-              <span>Creating task...</span>
+              <span>Creating task record...</span>
             </>
           ) : (
             <>

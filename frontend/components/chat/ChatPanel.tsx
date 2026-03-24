@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useCallback, useState } from 'react'
 import { useConversation } from '@/hooks/useConversation'
 import type { ChatApiRequest, ChatApiResponse } from '@/types/chat'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 declare global {
   class SpeechRecognition extends EventTarget {
@@ -69,6 +70,8 @@ export default function ChatPanel({ onTasksChanged }: ChatPanelProps) {
   const [isSending, setIsSending] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [voiceError, setVoiceError] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [pendingDeleteMessage, setPendingDeleteMessage] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
@@ -85,6 +88,16 @@ export default function ChatPanel({ onTasksChanged }: ChatPanelProps) {
 
   useEffect(() => {
     return () => { recognitionRef.current?.stop() }
+  }, [])
+
+  const isDeleteIntent = useCallback((text: string) => {
+    const normalized = text.toLowerCase()
+
+    if (/\b(don't|do not|not)\s+(delete|remove|erase)\b/.test(normalized)) {
+      return false
+    }
+
+    return /\b(delete|remove|erase)\b/.test(normalized)
   }, [])
 
   const toggleVoice = useCallback(() => {
@@ -150,12 +163,18 @@ export default function ChatPanel({ onTasksChanged }: ChatPanelProps) {
     recognition.start()
   }, [isListening, speechSupported, input])
 
-  const sendMessage = useCallback(async (forceContent?: string) => {
+  const sendMessage = useCallback(async (forceContent?: string, skipDeleteConfirm = false) => {
     if (isListening && !forceContent) {
       recognitionRef.current?.stop()
     }
     const trimmed = (forceContent ?? input).trim()
     if (!trimmed || isSending) return
+
+    if (!skipDeleteConfirm && isDeleteIntent(trimmed)) {
+      setPendingDeleteMessage(trimmed)
+      setShowDeleteConfirm(true)
+      return
+    }
 
     setInput('')
     setIsSending(true)
@@ -215,7 +234,22 @@ export default function ChatPanel({ onTasksChanged }: ChatPanelProps) {
       setIsSending(false)
       inputRef.current?.focus()
     }
-  }, [input, isSending, isListening, conversationId, addMessage, replaceLoadingMessage, setConversationId, onTasksChanged])
+  }, [input, isSending, isListening, conversationId, addMessage, replaceLoadingMessage, setConversationId, onTasksChanged, isDeleteIntent])
+
+  const handleDeleteConfirm = useCallback(() => {
+    if (!pendingDeleteMessage) return
+
+    const messageToSend = pendingDeleteMessage
+    setShowDeleteConfirm(false)
+    setPendingDeleteMessage(null)
+    void sendMessage(messageToSend, true)
+  }, [pendingDeleteMessage, sendMessage])
+
+  const handleDeleteCancel = useCallback(() => {
+    setShowDeleteConfirm(false)
+    setPendingDeleteMessage(null)
+    inputRef.current?.focus()
+  }, [])
 
   // Keep ref current so recognition.onend can call the latest sendMessage without stale closure
   useEffect(() => { sendMessageRef.current = sendMessage }, [sendMessage])
@@ -333,6 +367,17 @@ export default function ChatPanel({ onTasksChanged }: ChatPanelProps) {
           }
         </p>
       </div>
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        title="Confirm Task Deletion"
+        message="Are you sure you want to delete this task via chat?"
+        confirmText="Yes, delete"
+        cancelText="No"
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
     </div>
   )
 }
@@ -349,7 +394,7 @@ function ChatEmptyState() {
       </div>
       <h3 className="text-sm font-semibold text-white/70 mb-1">Chat with your AI assistant</h3>
       <p className="text-xs text-white/30 leading-relaxed max-w-[200px]">
-        Try: &ldquo;Add a task to review the PR&rdquo; or &ldquo;Show me my tasks&rdquo;
+        Try: &ldquo;Delete task 12&rdquo; or &ldquo;Complete task 7&rdquo; using visible task IDs
       </p>
     </div>
   )

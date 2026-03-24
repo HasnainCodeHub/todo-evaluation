@@ -12,10 +12,15 @@ export interface Task {
   user_id: string
   title: string
   description?: string
+  priority: TaskPriority
+  due_date?: string | null
+  category?: string | null
   completed: boolean
   created_at: string
   updated_at: string
 }
+
+export type TaskPriority = 'low' | 'medium' | 'high'
 
 export interface AuthState {
   isAuthenticated: boolean
@@ -27,11 +32,17 @@ export interface AuthState {
 export interface TaskCreateRequest {
   title: string
   description?: string
+  priority: TaskPriority
+  due_date?: string
+  category?: string
 }
 
 export interface TaskUpdateRequest {
   title?: string
   description?: string
+  priority?: TaskPriority
+  due_date?: string | null
+  category?: string | null
   completed?: boolean
 }
 

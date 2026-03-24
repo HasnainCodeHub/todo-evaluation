@@ -6,9 +6,9 @@ import { useState, useEffect } from 'react'
 
 interface TaskListProps {
   tasks: Task[]
-  onToggleComplete: (taskId: number) => void
-  onUpdate: (taskId: number, updates: { title?: string; description?: string }) => void
-  onDelete: (taskId: number) => void
+  onToggleComplete: (taskId: number) => Promise<void> | void
+  onUpdate: (taskId: number, updates: { title?: string; description?: string; priority?: Task['priority']; due_date?: string | null; category?: string | null }) => Promise<void> | void
+  onDelete: (taskId: number) => Promise<void> | void
   isLoading?: boolean
 }
 

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { ToastProvider } from '@/components/ui'
 
 export const metadata: Metadata = {
   title: {
@@ -84,9 +85,11 @@ export default function RootLayout({
         className="font-sans antialiased bg-surface-950 text-white"
         suppressHydrationWarning
       >
-        <div className="min-h-screen">
-          {children}
-        </div>
+        <ToastProvider>
+          <div className="min-h-screen">
+            {children}
+          </div>
+        </ToastProvider>
       </body>
     </html>
   )

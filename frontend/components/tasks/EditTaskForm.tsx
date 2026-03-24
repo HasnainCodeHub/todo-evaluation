@@ -1,17 +1,20 @@
 'use client'
 
 import { FormEvent, useState, useEffect } from 'react'
-import type { Task } from '../../types/task'
+import type { Task, TaskPriority } from '../../types/task'
 
 interface EditTaskFormProps {
   task: Task
-  onUpdate: (updates: { title?: string; description?: string }) => void
+  onUpdate: (updates: { title?: string; description?: string; priority?: TaskPriority; due_date?: string | null; category?: string | null }) => Promise<void> | void
   onCancel: () => void
 }
 
 export default function EditTaskForm({ task, onUpdate, onCancel }: EditTaskFormProps) {
   const [title, setTitle] = useState(task.title)
   const [description, setDescription] = useState(task.description || '')
+  const [priority, setPriority] = useState<TaskPriority>(task.priority)
+  const [dueDate, setDueDate] = useState(task.due_date ? task.due_date.slice(0, 16) : '')
+  const [category, setCategory] = useState(task.category || '')
   const [titleError, setTitleError] = useState('')
   const [descriptionError, setDescriptionError] = useState('')
 
@@ -33,10 +36,16 @@ export default function EditTaskForm({ task, onUpdate, onCancel }: EditTaskFormP
     if (!title.trim()) { setTitleError('Title is required'); return }
     if (title.length > 200) { setTitleError('Title must be less than 200 characters'); return }
     if (description.length > 1000) { setDescriptionError('Description must be less than 1000 characters'); return }
+    if (category.length > 50) { setDescriptionError('Category must be less than 50 characters'); return }
     setTitleError(''); setDescriptionError('')
     try {
-      onUpdate({ title: title.trim(), description: description.trim() || undefined })
-      onCancel()
+      await onUpdate({
+        title: title.trim(),
+        description: description.trim() || undefined,
+        priority,
+        due_date: dueDate ? new Date(dueDate).toISOString() : null,
+        category: category.trim() || null,
+      })
     } catch {
       // Error handled by parent
     }
@@ -107,6 +116,40 @@ export default function EditTaskForm({ task, onUpdate, onCancel }: EditTaskFormP
                   </p>
                 )}
                 <p className="mt-1 text-xs text-white/25 text-right">{description.length}/1000</p>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label htmlFor="edit-priority" className="block text-sm font-medium text-white/60 mb-2">Priority</label>
+                  <select id="edit-priority" value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)} className="input-modern">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="edit-due-date" className="block text-sm font-medium text-white/60 mb-2">
+                    Due Date <span className="text-white/30">(optional)</span>
+                  </label>
+                  <input id="edit-due-date" type="datetime-local" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="input-modern" />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="edit-category" className="block text-sm font-medium text-white/60 mb-2">
+                  Category <span className="text-white/30">(optional)</span>
+                </label>
+                <input
+                  id="edit-category"
+                  type="text"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="input-modern"
+                  maxLength={50}
+                  placeholder="Work, Personal, Follow-up..."
+                />
+                <p className="mt-1 text-xs text-white/25 text-right">{category.length}/50</p>
               </div>
             </div>
 

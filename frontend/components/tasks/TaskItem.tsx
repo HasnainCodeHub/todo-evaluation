@@ -4,55 +4,202 @@ import type { Task } from '../../types/task'
 import { useState, useEffect } from 'react'
 import ConfirmDialog from '../ui/ConfirmDialog'
 import EditTaskForm from './EditTaskForm'
+import { useToast } from '../ui/Toast'
+
+function formatDateTime(value: string) {
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Unavailable'
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(date)
+}
+
+function formatRelativeTime(value: string) {
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Unavailable'
+  }
+
+  const diffMs = Date.now() - date.getTime()
+  const diffMinutes = Math.max(0, Math.round(diffMs / 60000))
+
+  if (diffMinutes < 1) return 'Just now'
+  if (diffMinutes < 60) return `${diffMinutes}m ago`
+
+  const diffHours = Math.round(diffMinutes / 60)
+  if (diffHours < 24) return `${diffHours}h ago`
+
+  const diffDays = Math.round(diffHours / 24)
+  if (diffDays < 7) return `${diffDays}d ago`
+
+  return formatDateTime(value)
+}
+
+function formatDueDate(value?: string | null) {
+  if (!value) {
+    return ''
+  }
+
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Unavailable'
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(date)
+}
+
+function getPriorityClasses(priority: Task['priority']) {
+  if (priority === 'high') {
+    return 'border-rose-500/25 bg-rose-500/10 text-rose-300'
+  }
+  if (priority === 'low') {
+    return 'border-sky-500/25 bg-sky-500/10 text-sky-300'
+  }
+  return 'border-amber-500/25 bg-amber-500/10 text-amber-300'
+}
 
 interface TaskItemProps {
   task: Task
-  onToggleComplete: (taskId: number) => void
-  onUpdate: (taskId: number, updates: { title?: string; description?: string }) => void
-  onDelete: (taskId: number) => void
+  onToggleComplete: (taskId: number) => Promise<void> | void
+  onUpdate: (taskId: number, updates: { title?: string; description?: string; priority?: Task['priority']; due_date?: string | null; category?: string | null }) => Promise<void> | void
+  onDelete: (taskId: number) => Promise<void> | void
   isLoading?: boolean
   index?: number
 }
 
 export default function TaskItem({ task, onToggleComplete, onUpdate, onDelete, isLoading, index = 0 }: TaskItemProps) {
+  const { addToast } = useToast()
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isToggling, setIsToggling] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
+  const [actionFeedback, setActionFeedback] = useState<{
+    mode: 'idle' | 'loading' | 'success'
+    action?: 'complete' | 'reopen' | 'update' | 'delete'
+  }>({ mode: 'idle' })
   const [mounted, setMounted] = useState(false)
+  const createdLabel = formatDateTime(task.created_at)
+  const updatedLabel = formatDateTime(task.updated_at)
+  const lastModifiedLabel = formatRelativeTime(task.updated_at)
+  const dueDateLabel = formatDueDate(task.due_date)
 
   useEffect(() => {
     const timer = setTimeout(() => setMounted(true), index * 50)
     return () => clearTimeout(timer)
   }, [index])
 
+  useEffect(() => {
+    if (actionFeedback.mode !== 'success') return
+
+    const timer = setTimeout(() => {
+      setActionFeedback({ mode: 'idle' })
+    }, 1800)
+
+    return () => clearTimeout(timer)
+  }, [actionFeedback])
+
+  const getFeedbackMessage = () => {
+    if (actionFeedback.mode === 'loading') {
+      if (actionFeedback.action === 'complete') {
+        return `Marking "${task.title}" as completed...`
+      }
+      if (actionFeedback.action === 'reopen') {
+        return `Marking "${task.title}" as active...`
+      }
+      if (actionFeedback.action === 'update') {
+        return `Saving changes to "${task.title}"...`
+      }
+      if (actionFeedback.action === 'delete') {
+        return `Deleting "${task.title}"...`
+      }
+    }
+
+    if (actionFeedback.mode === 'success') {
+      if (actionFeedback.action === 'complete') {
+        return `Marked "${task.title}" as completed.`
+      }
+      if (actionFeedback.action === 'reopen') {
+        return `Marked "${task.title}" as active.`
+      }
+      if (actionFeedback.action === 'update') {
+        return `Changes saved for "${task.title}".`
+      }
+    }
+
+    return ''
+  }
+
   const handleToggle = async () => {
     if (!isLoading && !isToggling) {
+      const isCompleting = !task.completed
       setIsToggling(true)
-      if (!task.completed) {
+      if (isCompleting) {
+        setActionFeedback({ mode: 'loading', action: 'complete' })
         setShowConfetti(true)
         setTimeout(() => setShowConfetti(false), 1000)
+      } else {
+        setActionFeedback({ mode: 'loading', action: 'reopen' })
       }
-      onToggleComplete(task.id)
-      setTimeout(() => setIsToggling(false), 500)
+
+      try {
+        await onToggleComplete(task.id)
+        setActionFeedback({ mode: 'success', action: isCompleting ? 'complete' : 'reopen' })
+      } catch {
+        setActionFeedback({ mode: 'idle' })
+      } finally {
+        setTimeout(() => setIsToggling(false), 500)
+      }
     }
   }
 
   const handleDeleteClick = () => setShowDeleteConfirm(true)
 
   const handleDeleteConfirm = () => {
-    setIsDeleting(true)
     setShowDeleteConfirm(false)
-    setTimeout(() => onDelete(task.id), 300)
+    void (async () => {
+      setActionFeedback({ mode: 'loading', action: 'delete' })
+
+      try {
+        await onDelete(task.id)
+        addToast(`Task "${task.title}" was deleted successfully.`, 'success')
+      } catch {
+        setIsDeleting(false)
+        setActionFeedback({ mode: 'idle' })
+        addToast(`Unable to delete "${task.title}". Please try again.`, 'error')
+      }
+    })()
   }
 
   const handleDeleteCancel = () => setShowDeleteConfirm(false)
 
-  const handleEdit = (updates: { title?: string; description?: string }) => {
+  const handleEdit = async (updates: { title?: string; description?: string; priority?: Task['priority']; due_date?: string | null; category?: string | null }) => {
     if (!isLoading) {
-      onUpdate(task.id, updates)
-      setIsEditing(false)
+      setActionFeedback({ mode: 'loading', action: 'update' })
+
+      try {
+        await onUpdate(task.id, updates)
+        setActionFeedback({ mode: 'success', action: 'update' })
+        setIsEditing(false)
+      } catch {
+        setActionFeedback({ mode: 'idle' })
+        addToast(`Unable to update "${task.title}". Please try again.`, 'error')
+        throw new Error('Task update failed')
+      }
     }
   }
 
@@ -124,6 +271,14 @@ export default function TaskItem({ task, onToggleComplete, onUpdate, onDelete, i
 
           {/* Content */}
           <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="inline-flex items-center px-2 py-0.5 text-[11px] font-semibold tracking-wide rounded-md border border-primary-500/25 bg-primary-500/10 text-primary-300">
+                #{task.id}
+              </span>
+              <span className="text-[11px] text-white/35">
+                Reference this ID in AI chat commands
+              </span>
+            </div>
             <h3 className={`font-semibold text-base break-words transition-all duration-500 leading-relaxed ${
               task.completed
                 ? 'text-emerald-400/70 line-through decoration-emerald-500/40 decoration-2'
@@ -137,6 +292,56 @@ export default function TaskItem({ task, onToggleComplete, onUpdate, onDelete, i
               }`}>
                 {task.description}
               </p>
+            )}
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className={`inline-flex items-center px-2.5 py-1 text-[11px] font-semibold rounded-full border ${getPriorityClasses(task.priority)}`}>
+                {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
+              </span>
+              {task.category && (
+                <span className="inline-flex items-center px-2.5 py-1 text-[11px] font-semibold rounded-full border border-white/10 bg-white/[0.04] text-white/65">
+                  {task.category}
+                </span>
+              )}
+              {task.due_date && (
+                <span className="inline-flex items-center px-2.5 py-1 text-[11px] font-semibold rounded-full border border-cyan-500/20 bg-cyan-500/10 text-cyan-300">
+                  Due {dueDateLabel}
+                </span>
+              )}
+            </div>
+
+            <div className="mt-4 grid grid-cols-1 gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-3 sm:grid-cols-3">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/25">Created</p>
+                <p className="mt-1 text-xs font-medium text-white/65">{createdLabel}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/25">Updated</p>
+                <p className="mt-1 text-xs font-medium text-white/65">{updatedLabel}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/25">Last Modified</p>
+                <p className="mt-1 inline-flex items-center gap-1.5 text-xs font-medium text-white/65">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  {lastModifiedLabel}
+                </p>
+              </div>
+            </div>
+
+            {actionFeedback.mode === 'loading' && (
+              <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs font-medium text-amber-300">
+                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-amber-300/40 border-t-amber-300" />
+                {getFeedbackMessage()}
+              </div>
+            )}
+
+            {actionFeedback.mode === 'success' && (
+              <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs font-medium text-emerald-300">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+                {getFeedbackMessage()}
+              </div>
             )}
 
             {/* Actions */}
